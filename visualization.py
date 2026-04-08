@@ -16,6 +16,113 @@ from classes import Room, Machinery, Pipe, NoGoZone, Position
 from typing import List, Optional
 
 
+def create_snap_figure(
+    room: Room,
+    machinery_list: List[Machinery] = [],
+    snap_grid_z: float = 0.0,
+    grid_resolution: float = 0.5,
+    snap_start: Optional[Position] = None,
+    snap_end: Optional[Position] = None,
+):
+    """
+    2-D top-down (XY) floor-plan for click-to-place pipe endpoints.
+
+    Uses a 2-D Scatter trace with dragmode='select' so that a single click
+    on any cyan grid dot fires Streamlit's on_select event.  The z-coordinate
+    comes from snap_grid_z (controlled by the height slider in the UI).
+    """
+    fig = go.Figure()
+    L, W = room.length, room.width
+
+    # Machinery footprints (top-down rectangles)
+    machine_colours = {
+        "General":     ("royalblue",  0.40),
+        "Switchboard": ("darkorange", 0.45),
+        "Hot Surface": ("firebrick",  0.45),
+    }
+    for m in machinery_list:
+        if not m.position:
+            continue
+        colour, opacity = machine_colours.get(m.machine_type, ("royalblue", 0.40))
+        xn, yn = m.position.x, m.position.y
+        xx, yx = xn + m.length, yn + m.width
+        fig.add_shape(
+            type="rect", x0=xn, y0=yn, x1=xx, y1=yx,
+            fillcolor=colour, opacity=opacity,
+            line=dict(color=colour, width=1),
+        )
+        fig.add_annotation(
+            x=(xn + xx) / 2, y=(yn + yx) / 2,
+            text=m.name, showarrow=False,
+            font=dict(size=9, color="white"),
+        )
+
+    # Snap grid dots (cyan) — customdata carries (x, y, z) for the handler
+    xs, ys, cdata = [], [], []
+    for gx in np.arange(0, L + grid_resolution * 0.5, grid_resolution):
+        for gy in np.arange(0, W + grid_resolution * 0.5, grid_resolution):
+            rx = round(min(gx, L), 3)
+            ry = round(min(gy, W), 3)
+            rz = round(snap_grid_z, 3)
+            xs.append(rx)
+            ys.append(ry)
+            cdata.append([rx, ry, rz])
+
+    fig.add_trace(go.Scatter(
+        x=xs, y=ys,
+        mode="markers",
+        marker=dict(size=8, color="cyan", opacity=0.85,
+                    line=dict(color="steelblue", width=1)),
+        customdata=cdata,
+        name="Snap grid",
+        hovertemplate="X: %{x:.2f} m   Y: %{y:.2f} m   Z: "
+                      + f"{snap_grid_z:.2f} m<extra></extra>",
+    ))
+
+    # Start / End markers
+    if snap_start:
+        fig.add_trace(go.Scatter(
+            x=[snap_start.x], y=[snap_start.y],
+            mode="markers+text",
+            marker=dict(size=16, color="limegreen", symbol="circle",
+                        line=dict(color="darkgreen", width=2)),
+            text=["S"], textfont=dict(size=11, color="darkgreen"),
+            textposition="top center",
+            name="Start",
+            hovertemplate=(
+                f"<b>Start</b>  ({snap_start.x}, {snap_start.y}, "
+                f"{snap_start.z})<extra></extra>"
+            ),
+        ))
+    if snap_end:
+        fig.add_trace(go.Scatter(
+            x=[snap_end.x], y=[snap_end.y],
+            mode="markers+text",
+            marker=dict(size=16, color="tomato", symbol="circle",
+                        line=dict(color="darkred", width=2)),
+            text=["E"], textfont=dict(size=11, color="darkred"),
+            textposition="top center",
+            name="End",
+            hovertemplate=(
+                f"<b>End</b>  ({snap_end.x}, {snap_end.y}, "
+                f"{snap_end.z})<extra></extra>"
+            ),
+        ))
+
+    fig.update_layout(
+        xaxis=dict(
+            range=[-0.3, L + 0.3], title="X — Length (m)",
+            scaleanchor="y", scaleratio=1,
+        ),
+        yaxis=dict(range=[-0.3, W + 0.3], title="Y — Width (m)"),
+        dragmode="select",   # default to select mode so a click registers
+        height=320,
+        margin=dict(r=0, l=0, b=30, t=0),
+        legend=dict(x=0.01, y=0.99, bgcolor="rgba(255,255,255,0.7)"),
+    )
+    return fig
+
+
 def create_room_figure(
     room: Room,
     machinery_list: List[Machinery] = [],

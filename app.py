@@ -11,7 +11,7 @@ Streamlit front-end with three workflow stages:
 import os
 import streamlit as st
 from classes import Room, Machinery, Pipe, NoGoZone, Position
-from visualization import create_room_figure
+from visualization import create_room_figure, create_snap_figure
 from algorithms import AStar
 from fuzzy_installability import FuzzyInstallability
 
@@ -266,20 +266,22 @@ elif step == "3. Route Pipes":
         snap_start_pos = Position(_ss[0], _ss[1], _ss[2]) if _ss else None
         snap_end_pos   = Position(_se[0], _se[1], _se[2]) if _se else None
 
-        fig_snap = create_room_figure(
+        # 2-D top-down snap grid (on_select works reliably in 2-D; 3-D clicks
+        # only fire plotly_click, not plotly_selected that Streamlit listens to)
+        fig_snap = create_snap_figure(
             room,
             st.session_state.machinery_list,
-            st.session_state.pipe_list,
-            st.session_state.no_go_zones,
-            snap_grid_z=snap_z if snap_mode != "Off" else None,
+            snap_grid_z=snap_z,
             grid_resolution=snap_res,
             snap_start=snap_start_pos,
             snap_end=snap_end_pos,
         )
 
-        # --- on_select click handler (Streamlit ≥ 1.33) ---
-        # Key encodes current snap points so the chart re-renders (and shows
-        # markers) whenever a point is placed, rather than reusing cached state.
+        st.caption(
+            "Top-down floor plan — click a cyan dot to place the selected endpoint."
+        )
+
+        # Key encodes snap state so the chart always re-renders with fresh markers.
         _snap_chart_key = (
             f"snap_chart_{st.session_state.snap_start}_{st.session_state.snap_end}"
         )
@@ -293,22 +295,36 @@ elif step == "3. Route Pipes":
             # Process click only when snap mode is active
             if snap_mode != "Off" and snap_event and snap_event.selection.points:
                 pt = snap_event.selection.points[0]
-                # Only respond to snap grid clicks — identified by customdata
-                cd = getattr(pt, "customdata", None)
-                if cd and len(cd) == 3:
+                # customdata holds [x, y, z]; handle both Bunch and dict forms
+                cd = (
+                    getattr(pt, "customdata", None)
+                    or (pt.get("customdata") if hasattr(pt, "get") else None)
+                )
+                if cd and len(cd) >= 3:
                     cx, cy, cz = float(cd[0]), float(cd[1]), float(cd[2])
+                else:
+                    # Fall back to point x/y + snap plane z
+                    raw_x = getattr(pt, "x", None) or (pt.get("x") if hasattr(pt, "get") else None)
+                    raw_y = getattr(pt, "y", None) or (pt.get("y") if hasattr(pt, "get") else None)
+                    if raw_x is None or raw_y is None:
+                        raw_x = raw_y = None
+                    cx = round(float(raw_x), 3) if raw_x is not None else None
+                    cy = round(float(raw_y), 3) if raw_y is not None else None
+                    cz = round(snap_z, 3)
+                if cx is not None and cy is not None:
                     if "Start" in snap_mode:
-                        st.session_state.snap_start  = (cx, cy, cz)
-                        st.session_state.pipe_sx     = cx
-                        st.session_state.pipe_sy     = cy
-                        st.session_state.pipe_sz     = cz
+                        st.session_state.snap_start = (cx, cy, cz)
+                        st.session_state.pipe_sx    = cx
+                        st.session_state.pipe_sy    = cy
+                        st.session_state.pipe_sz    = cz
                         st.toast(f"Start set to ({cx}, {cy}, {cz}) m", icon="🟢")
                     else:
-                        st.session_state.snap_end    = (cx, cy, cz)
-                        st.session_state.pipe_ex     = cx
-                        st.session_state.pipe_ey     = cy
-                        st.session_state.pipe_ez     = cz
+                        st.session_state.snap_end = (cx, cy, cz)
+                        st.session_state.pipe_ex  = cx
+                        st.session_state.pipe_ey  = cy
+                        st.session_state.pipe_ez  = cz
                         st.toast(f"End set to ({cx}, {cy}, {cz}) m", icon="🔴")
+                    st.rerun()
         except TypeError:
             # Fallback for Streamlit < 1.33
             st.plotly_chart(fig_snap, use_container_width=True)
