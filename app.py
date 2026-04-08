@@ -278,12 +278,17 @@ elif step == "3. Route Pipes":
         )
 
         # --- on_select click handler (Streamlit ≥ 1.33) ---
+        # Key encodes current snap points so the chart re-renders (and shows
+        # markers) whenever a point is placed, rather than reusing cached state.
+        _snap_chart_key = (
+            f"snap_chart_{st.session_state.snap_start}_{st.session_state.snap_end}"
+        )
         try:
             snap_event = st.plotly_chart(
                 fig_snap,
                 use_container_width=True,
                 on_select="rerun",
-                key="snap_chart",
+                key=_snap_chart_key,
             )
             # Process click only when snap mode is active
             if snap_mode != "Off" and snap_event and snap_event.selection.points:
