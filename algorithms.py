@@ -12,7 +12,7 @@ produce an installability penalty, which is added to the A* move cost.
 This guides the router to prefer paths through more accessible space.
 """
 
-from classes import Room, Machinery, Pipe, NoGoZone, Position
+from classes import Room, Machinery, Pipe, NoGoZone, Position, WalkingSpace, RoutingTray
 from fuzzy_installability import FuzzyInstallability
 from typing import List, Optional, Tuple, Set
 import math
@@ -29,6 +29,8 @@ class AStar:
     room              : Room — engine room dimensions
     machinery_list    : List[Machinery] — placed machines (obstacles)
     no_go_zones       : List[NoGoZone] — hard forbidden regions
+    walking_spaces    : List[WalkingSpace] — crew walkways (pipes forbidden 0→2.1 m)
+    routing_trays     : List[RoutingTray] — preferred tray zones (cost discount)
     fuzzy             : FuzzyInstallability — pre-built fuzzy module (optional)
     grid_resolution   : float — cell size in metres (default 0.5 m)
     w_dist            : float — base movement cost weight
@@ -36,6 +38,8 @@ class AStar:
     w_vertical        : float — penalty per vertical step
     w_installability  : float — penalty weight for poor installability
                         0.0 = pure shortest path, >0 = prefer accessible routes
+    w_tray            : float — cost discount per step inside a routing tray
+                        0.0 = no preference, >0 = prefer tray routes
     """
 
     def __init__(
@@ -43,26 +47,36 @@ class AStar:
         room: Room,
         machinery_list: List[Machinery],
         no_go_zones: List[NoGoZone],
+        walking_spaces: List[WalkingSpace] = None,
+        routing_trays: List[RoutingTray] = None,
         fuzzy: FuzzyInstallability = None,
         grid_resolution: float = 0.5,
         w_dist: float = 1.0,
         w_bend: float = 2.0,
         w_vertical: float = 1.5,
         w_installability: float = 0.0,
+        w_tray: float = 0.5,
     ):
         self.room             = room
         self.machinery_list   = machinery_list
         self.no_go_zones      = no_go_zones
+        self.walking_spaces   = walking_spaces or []
+        self.routing_trays    = routing_trays or []
         self.fuzzy            = fuzzy
         self.grid_resolution  = grid_resolution
         self.w_dist           = w_dist
         self.w_bend           = w_bend
         self.w_vertical       = w_vertical
         self.w_installability = w_installability
+        self.w_tray           = w_tray
 
-        # Build static obstacle set (machinery + no-go zones)
+        # Build static obstacle set (machinery + no-go zones + walking spaces)
         self.obstacles: Set[Tuple[int, int, int]] = set()
         self._mark_obstacles()
+
+        # Build preferred-cell set (routing trays → cost discount)
+        self.tray_cells: Set[Tuple[int, int, int]] = set()
+        self._mark_tray_cells()
 
         # Pre-compute clearance map if fuzzy penalty is active
         self.clearance_map: Optional[np.ndarray] = None
@@ -84,7 +98,7 @@ class AStar:
     # ------------------------------------------------------------------
 
     def _mark_obstacles(self):
-        """Fill obstacle set from machinery bounding boxes and no-go zones."""
+        """Fill obstacle set from machinery, no-go zones, and walking spaces."""
         for m in self.machinery_list:
             if m.position:
                 self._fill_box(
@@ -96,6 +110,36 @@ class AStar:
         for z in self.no_go_zones:
             self._fill_box(z.x_min, z.y_min, z.z_min,
                            z.x_max, z.y_max, z.z_max)
+        for w in self.walking_spaces:
+            # Walking space blocks pipes from z=0 up to w.height (default 2.1 m)
+            self._fill_box(w.x_min, w.y_min, 0.0,
+                           w.x_max, w.y_max, w.height)
+
+    def _mark_tray_cells(self):
+        """
+        Routing trays are physical structures — pipes run ALONGSIDE them, not
+        through them.
+
+        Step 1: add every cell inside a tray to the obstacle set (hard block).
+        Step 2: collect the cells immediately adjacent to each tray (1-cell shell
+                around the bounding box) that are not themselves obstacles.
+                These go into self.tray_cells and receive a cost discount in A*.
+        """
+        # Step 1 — tray interiors become obstacles
+        for t in self.routing_trays:
+            for gx in range(self._to_grid(t.x_min), self._to_grid(t.x_max) + 1):
+                for gy in range(self._to_grid(t.y_min), self._to_grid(t.y_max) + 1):
+                    for gz in range(self._to_grid(t.z_min), self._to_grid(t.z_max) + 1):
+                        self.obstacles.add((gx, gy, gz))
+
+        # Step 2 — 1-cell shell around each tray → preferred (discount) cells
+        for t in self.routing_trays:
+            for gx in range(self._to_grid(t.x_min) - 1, self._to_grid(t.x_max) + 2):
+                for gy in range(self._to_grid(t.y_min) - 1, self._to_grid(t.y_max) + 2):
+                    for gz in range(self._to_grid(t.z_min) - 1, self._to_grid(t.z_max) + 2):
+                        cell = (gx, gy, gz)
+                        if cell not in self.obstacles:
+                            self.tray_cells.add(cell)
 
     def _fill_box(self, xmin, ymin, zmin, xmax, ymax, zmax):
         for x in range(self._to_grid(xmin), self._to_grid(xmax) + 1):
@@ -310,6 +354,10 @@ class AStar:
 
                 # Fuzzy installability penalty
                 move_cost += self._installability_cost(nb, pipe_radius_mm)
+
+                # Routing tray discount (makes tray cells cheaper to traverse)
+                if self.w_tray > 0 and nb in self.tray_cells:
+                    move_cost = max(0.1, move_cost - self.w_tray)
 
                 new_g = g + move_cost
 

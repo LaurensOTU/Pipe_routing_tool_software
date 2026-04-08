@@ -37,6 +37,36 @@ class NoGoZone:
     z_max: float
 
 @dataclass
+class WalkingSpace:
+    """
+    Crew walkway / gangway.  Engineers mark the XY footprint; the height is
+    always 0 → 2.1 m (head-clearance requirement).  Pipes may NOT enter this
+    volume.
+    """
+    id: str
+    name: str
+    x_min: float
+    y_min: float
+    x_max: float
+    y_max: float
+    height: float = 2.1   # fixed: DNV / class requirement
+
+@dataclass
+class RoutingTray:
+    """
+    Dedicated pipe / cable tray.  Engineers define the full 3-D bounding box.
+    Pipes are strongly preferred to route through trays (lower A* cost).
+    """
+    id: str
+    name: str
+    x_min: float
+    y_min: float
+    z_min: float
+    x_max: float
+    y_max: float
+    z_max: float
+
+@dataclass
 class Pipe:
     id: str
     name: str

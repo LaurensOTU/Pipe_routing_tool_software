@@ -12,7 +12,7 @@ New parameters versus original:
 
 import numpy as np
 import plotly.graph_objects as go
-from classes import Room, Machinery, Pipe, NoGoZone, Position
+from classes import Room, Machinery, Pipe, NoGoZone, Position, WalkingSpace, RoutingTray
 from typing import List, Optional
 
 
@@ -23,6 +23,8 @@ def create_snap_figure(
     grid_resolution: float = 0.5,
     snap_start: Optional[Position] = None,
     snap_end: Optional[Position] = None,
+    walking_spaces: List[WalkingSpace] = [],
+    routing_trays: List[RoutingTray] = [],
 ):
     """
     2-D top-down (XY) floor-plan for click-to-place pipe endpoints.
@@ -56,6 +58,35 @@ def create_snap_figure(
             text=m.name, showarrow=False,
             font=dict(size=9, color="white"),
         )
+
+    # Walking space footprints (green hatched rectangles)
+    for w in walking_spaces:
+        # Only show the footprint if the snap plane is within the walking space
+        fill = "mediumseagreen" if snap_grid_z <= w.height else "lightgrey"
+        fig.add_shape(
+            type="rect", x0=w.x_min, y0=w.y_min, x1=w.x_max, y1=w.y_max,
+            fillcolor=fill, opacity=0.30,
+            line=dict(color="green", width=1, dash="dot"),
+        )
+        fig.add_annotation(
+            x=(w.x_min + w.x_max) / 2, y=(w.y_min + w.y_max) / 2,
+            text=f"🚶 {w.name}", showarrow=False,
+            font=dict(size=8, color="darkgreen"),
+        )
+
+    # Routing tray footprints (grey outlines at their z range)
+    for t in routing_trays:
+        if t.z_min <= snap_grid_z <= t.z_max:
+            fig.add_shape(
+                type="rect", x0=t.x_min, y0=t.y_min, x1=t.x_max, y1=t.y_max,
+                fillcolor="silver", opacity=0.40,
+                line=dict(color="grey", width=1),
+            )
+            fig.add_annotation(
+                x=(t.x_min + t.x_max) / 2, y=(t.y_min + t.y_max) / 2,
+                text=f"▭ {t.name}", showarrow=False,
+                font=dict(size=8, color="dimgrey"),
+            )
 
     # Snap grid dots (cyan) — customdata carries (x, y, z) for the handler
     xs, ys, cdata = [], [], []
@@ -128,6 +159,8 @@ def create_room_figure(
     machinery_list: List[Machinery] = [],
     pipes: List[Pipe] = [],
     zones: List[NoGoZone] = [],
+    walking_spaces: List[WalkingSpace] = [],
+    routing_trays: List[RoutingTray] = [],
     snap_grid_z: Optional[float] = None,
     grid_resolution: float = 0.5,
     snap_start: Optional[Position] = None,
@@ -200,7 +233,57 @@ def create_room_figure(
         ))
 
     # ------------------------------------------------------------------
-    # 3. Routed pipes
+    # 3. Walking spaces  (green semi-transparent, z=0 → height)
+    # ------------------------------------------------------------------
+    def _mesh_box(xn, yn, zn, xx, yx, zx):
+        return dict(
+            x=[xn, xn, xx, xx, xn, xn, xx, xx],
+            y=[yn, yx, yx, yn, yn, yx, yx, yn],
+            z=[zn, zn, zn, zn, zx, zx, zx, zx],
+            i=[7, 0, 0, 0, 4, 4, 6, 6, 4, 0, 3, 2],
+            j=[3, 4, 1, 2, 5, 6, 5, 2, 0, 1, 6, 3],
+            k=[0, 7, 2, 3, 6, 7, 1, 1, 5, 5, 7, 6],
+        )
+
+    for i, w in enumerate(walking_spaces):
+        coords = _mesh_box(w.x_min, w.y_min, 0.0, w.x_max, w.y_max, w.height)
+        fig.add_trace(go.Mesh3d(
+            **coords,
+            color='mediumseagreen', opacity=0.30,
+            name=w.name,
+            showlegend=(i == 0),
+            legendgroup='walking',
+            legendgrouptitle_text='Walking Space' if i == 0 else None,
+            hovertemplate=(
+                f"<b>Walking space: {w.name}</b><br>"
+                f"X: {w.x_min}–{w.x_max} m<br>"
+                f"Y: {w.y_min}–{w.y_max} m<br>"
+                f"Height: {w.height} m (pipes forbidden)<extra></extra>"
+            ),
+        ))
+
+    # ------------------------------------------------------------------
+    # 4. Routing trays  (silver/grey semi-transparent)
+    # ------------------------------------------------------------------
+    for i, t in enumerate(routing_trays):
+        coords = _mesh_box(t.x_min, t.y_min, t.z_min, t.x_max, t.y_max, t.z_max)
+        fig.add_trace(go.Mesh3d(
+            **coords,
+            color='silver', opacity=0.50,
+            name=t.name,
+            showlegend=(i == 0),
+            legendgroup='tray',
+            legendgrouptitle_text='Routing Tray' if i == 0 else None,
+            hovertemplate=(
+                f"<b>Routing tray: {t.name}</b><br>"
+                f"X: {t.x_min}–{t.x_max} m<br>"
+                f"Y: {t.y_min}–{t.y_max} m<br>"
+                f"Z: {t.z_min}–{t.z_max} m<extra></extra>"
+            ),
+        ))
+
+    # ------------------------------------------------------------------
+    # 5. Routed pipes
     # ------------------------------------------------------------------
     # Colour by installability score if available (green=clear, red=tight)
     def _score_colour(score: float) -> str:
@@ -234,7 +317,7 @@ def create_room_figure(
         ))
 
     # ------------------------------------------------------------------
-    # 4. Snap grid plane  (clickable dots for pipe endpoint placement)
+    # 6. Snap grid plane  (clickable dots for pipe endpoint placement)
     # ------------------------------------------------------------------
     if snap_grid_z is not None:
         xs, ys, zs, cdata = [], [], [], []
@@ -258,7 +341,7 @@ def create_room_figure(
         ))
 
     # ------------------------------------------------------------------
-    # 5. Start / End point markers
+    # 7. Start / End point markers
     # ------------------------------------------------------------------
     if snap_start:
         fig.add_trace(go.Scatter3d(

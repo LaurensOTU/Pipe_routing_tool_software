@@ -10,7 +10,7 @@ Streamlit front-end with three workflow stages:
 
 import os
 import streamlit as st
-from classes import Room, Machinery, Pipe, NoGoZone, Position
+from classes import Room, Machinery, Pipe, NoGoZone, Position, WalkingSpace, RoutingTray
 from visualization import create_room_figure, create_snap_figure
 from algorithms import AStar
 from fuzzy_installability import FuzzyInstallability
@@ -87,10 +87,12 @@ st.sidebar.caption(f"MF type: **{mf_type}**  ({'Gaussian unlocked ✓' if n > 3 
 # Session state initialisation
 # ---------------------------------------------------------------------------
 for key, default in [
-    ("room",           None),
-    ("machinery_list", []),
-    ("no_go_zones",    []),
-    ("pipe_list",      []),
+    ("room",              None),
+    ("machinery_list",    []),
+    ("no_go_zones",       []),
+    ("walking_space_list", []),
+    ("routing_tray_list", []),
+    ("pipe_list",         []),
 ]:
     if key not in st.session_state:
         st.session_state[key] = default
@@ -129,6 +131,8 @@ if step == "1. Define Room":
             st.session_state.machinery_list,
             st.session_state.pipe_list,
             st.session_state.no_go_zones,
+            walking_spaces=st.session_state.walking_space_list,
+            routing_trays=st.session_state.routing_tray_list,
         )
         st.plotly_chart(fig, use_container_width=True)
 
@@ -201,6 +205,97 @@ elif step == "2. Place Machinery":
     else:
         st.info("No machinery placed yet. Use the form above to add machines.")
 
+    st.divider()
+
+    # -----------------------------------------------------------------------
+    # Walking spaces
+    # -----------------------------------------------------------------------
+    st.subheader("Walking Spaces (crew walkways)")
+    st.caption(
+        "Mark areas that must stay clear for crew access. "
+        "The full volume from z = 0 to z = 2.1 m is blocked for pipe routing."
+    )
+
+    with st.form("add_walking_space_form", clear_on_submit=True):
+        ws_name = st.text_input("Name", value="Main walkway")
+        st.markdown("**XY footprint (m)**")
+        wc1, wc2, wc3, wc4 = st.columns(4)
+        ws_x0 = wc1.number_input("X min", min_value=0.0, max_value=room.length, value=0.0, step=0.5)
+        ws_x1 = wc2.number_input("X max", min_value=0.0, max_value=room.length, value=2.0, step=0.5)
+        ws_y0 = wc3.number_input("Y min", min_value=0.0, max_value=room.width,  value=0.0, step=0.5)
+        ws_y1 = wc4.number_input("Y max", min_value=0.0, max_value=room.width,  value=room.width, step=0.5)
+        st.info("Height is fixed at **2.1 m** (head-clearance requirement).")
+        ws_submitted = st.form_submit_button("Add Walking Space")
+
+    if ws_submitted:
+        wid = f"ws_{len(st.session_state.walking_space_list)}"
+        st.session_state.walking_space_list.append(
+            WalkingSpace(id=wid, name=ws_name,
+                         x_min=ws_x0, y_min=ws_y0, x_max=ws_x1, y_max=ws_y1)
+        )
+        st.success(f"Added walking space '{ws_name}'")
+        st.rerun()
+
+    if st.session_state.walking_space_list:
+        for idx, w in enumerate(st.session_state.walking_space_list):
+            c_i, c_b = st.columns([5, 1])
+            c_i.text(f"{w.name}  |  X {w.x_min}–{w.x_max}  Y {w.y_min}–{w.y_max}  h=2.1 m")
+            if c_b.button("Remove", key=f"rmws_{idx}"):
+                st.session_state.walking_space_list.pop(idx)
+                st.rerun()
+
+    st.divider()
+
+    # -----------------------------------------------------------------------
+    # Routing trays
+    # -----------------------------------------------------------------------
+    st.subheader("Routing Trays")
+    st.caption(
+        "Define tray zones where pipes are preferred to run. "
+        "The A* router gives a cost discount to cells inside trays."
+    )
+
+    with st.form("add_routing_tray_form", clear_on_submit=True):
+        rt_name = st.text_input("Tray name", value="Port side tray")
+        st.markdown("**3-D bounding box (m)**")
+        rc1, rc2 = st.columns(2)
+        with rc1:
+            st.markdown("*Min corner*")
+            rca, rcb, rcc = st.columns(3)
+            rt_x0 = rca.number_input("X min", min_value=0.0, max_value=room.length, value=0.0, step=0.5, key="rt_x0")
+            rt_y0 = rcb.number_input("Y min", min_value=0.0, max_value=room.width,  value=0.0, step=0.5, key="rt_y0")
+            rt_z0 = rcc.number_input("Z min", min_value=0.0, max_value=room.height, value=room.height - 0.5, step=0.5, key="rt_z0")
+        with rc2:
+            st.markdown("*Max corner*")
+            rcd, rce, rcf = st.columns(3)
+            rt_x1 = rcd.number_input("X max", min_value=0.0, max_value=room.length, value=room.length, step=0.5, key="rt_x1")
+            rt_y1 = rce.number_input("Y max", min_value=0.0, max_value=room.width,  value=0.5,         step=0.5, key="rt_y1")
+            rt_z1 = rcf.number_input("Z max", min_value=0.0, max_value=room.height, value=room.height,  step=0.5, key="rt_z1")
+        rt_submitted = st.form_submit_button("Add Routing Tray")
+
+    if rt_submitted:
+        tid = f"rt_{len(st.session_state.routing_tray_list)}"
+        st.session_state.routing_tray_list.append(
+            RoutingTray(id=tid, name=rt_name,
+                        x_min=rt_x0, y_min=rt_y0, z_min=rt_z0,
+                        x_max=rt_x1, y_max=rt_y1, z_max=rt_z1)
+        )
+        st.success(f"Added routing tray '{rt_name}'")
+        st.rerun()
+
+    if st.session_state.routing_tray_list:
+        for idx, t in enumerate(st.session_state.routing_tray_list):
+            c_i, c_b = st.columns([5, 1])
+            c_i.text(
+                f"{t.name}  |  "
+                f"X {t.x_min}–{t.x_max}  Y {t.y_min}–{t.y_max}  Z {t.z_min}–{t.z_max} m"
+            )
+            if c_b.button("Remove", key=f"rmrt_{idx}"):
+                st.session_state.routing_tray_list.pop(idx)
+                st.rerun()
+
+    st.divider()
+
     # -----------------------------------------------------------------------
     # Visualisation
     # -----------------------------------------------------------------------
@@ -210,6 +305,8 @@ elif step == "2. Place Machinery":
         st.session_state.machinery_list,
         st.session_state.pipe_list,
         st.session_state.no_go_zones,
+        walking_spaces=st.session_state.walking_space_list,
+        routing_trays=st.session_state.routing_tray_list,
     )
     st.plotly_chart(fig, use_container_width=True)
 
@@ -275,6 +372,8 @@ elif step == "3. Route Pipes":
             grid_resolution=snap_res,
             snap_start=snap_start_pos,
             snap_end=snap_end_pos,
+            walking_spaces=st.session_state.walking_space_list,
+            routing_trays=st.session_state.routing_tray_list,
         )
 
         st.caption(
@@ -416,12 +515,14 @@ elif step == "3. Route Pipes":
     # -----------------------------------------------------------------------
     st.subheader("Routing Settings")
 
-    col_r1, col_r2, col_r3, col_r4 = st.columns(4)
-    w_dist   = col_r1.slider("Distance weight",         0.1, 5.0, 1.0, 0.1)
-    w_bend   = col_r2.slider("Bend penalty",            0.0, 10.0, 2.0, 0.5)
-    w_vert   = col_r3.slider("Vertical penalty",        0.0, 10.0, 1.5, 0.5)
-    w_inst   = col_r4.slider("Installability penalty",  0.0, 5.0,  0.0, 0.5,
-                              help="0 = pure shortest path. Increase to prefer more accessible routes.")
+    col_r1, col_r2, col_r3, col_r4, col_r5 = st.columns(5)
+    w_dist = col_r1.slider("Distance weight",        0.1, 5.0,  1.0, 0.1)
+    w_bend = col_r2.slider("Bend penalty",           0.0, 10.0, 2.0, 0.5)
+    w_vert = col_r3.slider("Vertical penalty",       0.0, 10.0, 1.5, 0.5)
+    w_inst = col_r4.slider("Installability penalty", 0.0, 5.0,  0.0, 0.5,
+                           help="0 = pure shortest path. Increase to prefer more accessible routes.")
+    w_tray = col_r5.slider("Tray preference",        0.0, 2.0,  0.5, 0.1,
+                           help="Cost discount per step inside a routing tray. 0 = ignore trays.")
 
     col_g1, col_g2 = st.columns(2)
     grid_res = col_g1.select_slider(
@@ -449,12 +550,15 @@ elif step == "3. Route Pipes":
                     room=room,
                     machinery_list=st.session_state.machinery_list,
                     no_go_zones=st.session_state.no_go_zones,
+                    walking_spaces=st.session_state.walking_space_list,
+                    routing_trays=st.session_state.routing_tray_list,
                     fuzzy=st.session_state.fuzzy if w_inst > 0 else None,
                     grid_resolution=grid_res,
                     w_dist=w_dist,
                     w_bend=w_bend,
                     w_vertical=w_vert,
                     w_installability=w_inst,
+                    w_tray=w_tray,
                 )
                 st.session_state.pipe_list = astar.route_all(
                     st.session_state.pipe_list
@@ -499,5 +603,7 @@ elif step == "3. Route Pipes":
         st.session_state.machinery_list,
         st.session_state.pipe_list,
         st.session_state.no_go_zones,
+        walking_spaces=st.session_state.walking_space_list,
+        routing_trays=st.session_state.routing_tray_list,
     )
     st.plotly_chart(fig, use_container_width=True)
