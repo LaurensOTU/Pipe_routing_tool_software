@@ -56,6 +56,7 @@ class AStar:
         w_vertical: float = 1.5,
         w_installability: float = 0.0,
         w_tray: float = 0.5,
+        w_suction: float = 2.0,
     ):
         self.room             = room
         self.machinery_list   = machinery_list
@@ -69,6 +70,10 @@ class AStar:
         self.w_vertical       = w_vertical
         self.w_installability = w_installability
         self.w_tray           = w_tray
+        self.w_suction        = w_suction  # penalty multiplier for suction pipes higher than necessary
+
+        # Offset for the 0.5m space below the engine room (z_min = -0.5)
+        self.z_min_world = -0.5
 
         # Build static obstacle set (machinery + no-go zones + walking spaces)
         self.obstacles: Set[Tuple[int, int, int]] = set()
@@ -87,10 +92,14 @@ class AStar:
     # Grid utilities
     # ------------------------------------------------------------------
 
-    def _to_grid(self, val: float) -> int:
+    def _to_grid(self, val: float, axis: str = "x") -> int:
+        if axis == "z":
+            return int(round((val - self.z_min_world) / self.grid_resolution))
         return int(round(val / self.grid_resolution))
 
-    def _to_world(self, val: int) -> float:
+    def _to_world(self, val: int, axis: str = "x") -> float:
+        if axis == "z":
+            return val * self.grid_resolution + self.z_min_world
         return val * self.grid_resolution
 
     # ------------------------------------------------------------------
@@ -127,24 +136,24 @@ class AStar:
         """
         # Step 1 — tray interiors become obstacles
         for t in self.routing_trays:
-            for gx in range(self._to_grid(t.x_min), self._to_grid(t.x_max) + 1):
-                for gy in range(self._to_grid(t.y_min), self._to_grid(t.y_max) + 1):
-                    for gz in range(self._to_grid(t.z_min), self._to_grid(t.z_max) + 1):
+            for gx in range(self._to_grid(t.x_min, "x"), self._to_grid(t.x_max, "x") + 1):
+                for gy in range(self._to_grid(t.y_min, "y"), self._to_grid(t.y_max, "y") + 1):
+                    for gz in range(self._to_grid(t.z_min, "z"), self._to_grid(t.z_max, "z") + 1):
                         self.obstacles.add((gx, gy, gz))
 
         # Step 2 — 1-cell shell around each tray → preferred (discount) cells
         for t in self.routing_trays:
-            for gx in range(self._to_grid(t.x_min) - 1, self._to_grid(t.x_max) + 2):
-                for gy in range(self._to_grid(t.y_min) - 1, self._to_grid(t.y_max) + 2):
-                    for gz in range(self._to_grid(t.z_min) - 1, self._to_grid(t.z_max) + 2):
+            for gx in range(self._to_grid(t.x_min, "x") - 1, self._to_grid(t.x_max, "x") + 2):
+                for gy in range(self._to_grid(t.y_min, "y") - 1, self._to_grid(t.y_max, "y") + 2):
+                    for gz in range(self._to_grid(t.z_min, "z") - 1, self._to_grid(t.z_max, "z") + 2):
                         cell = (gx, gy, gz)
                         if cell not in self.obstacles:
                             self.tray_cells.add(cell)
 
     def _fill_box(self, xmin, ymin, zmin, xmax, ymax, zmax):
-        for x in range(self._to_grid(xmin), self._to_grid(xmax) + 1):
-            for y in range(self._to_grid(ymin), self._to_grid(ymax) + 1):
-                for z in range(self._to_grid(zmin), self._to_grid(zmax) + 1):
+        for x in range(self._to_grid(xmin, "x"), self._to_grid(xmax, "x") + 1):
+            for y in range(self._to_grid(ymin, "y"), self._to_grid(ymax, "y") + 1):
+                for z in range(self._to_grid(zmin, "z"), self._to_grid(zmax, "z") + 1):
                     self.obstacles.add((x, y, z))
 
     # ------------------------------------------------------------------
@@ -159,9 +168,9 @@ class AStar:
         Result stored in self.clearance_map[gx, gy, gz] as float (mm).
         Cells that ARE obstacles get clearance = 0.
         """
-        gx_max = self._to_grid(self.room.length)  + 1
-        gy_max = self._to_grid(self.room.width)   + 1
-        gz_max = self._to_grid(self.room.height)  + 1
+        gx_max = self._to_grid(self.room.length, "x") + 1
+        gy_max = self._to_grid(self.room.width, "y") + 1
+        gz_max = self._to_grid(self.room.height, "z") + 1
 
         # Distance in grid cells (initialise to infinity for free cells)
         dist = np.full((gx_max, gy_max, gz_max), np.inf, dtype=float)
@@ -215,30 +224,6 @@ class AStar:
               f"max clearance = {self.clearance_map[self.clearance_map < 1e8].max():.0f} mm")
 
     # ------------------------------------------------------------------
-    # Class society rules
-    # ------------------------------------------------------------------
-
-    def _apply_class_rules(self, pipe: Pipe,
-                           current_obstacles: Set[Tuple[int, int, int]]):
-        """
-        Rule: Fuel pipes must not pass above switchboards.
-        Marks the column above every Switchboard as obstacle for this pipe.
-        """
-        if pipe.fluid_type == "Fuel":
-            for m in self.machinery_list:
-                if m.machine_type == "Switchboard" and m.position:
-                    x_min = self._to_grid(m.position.x)
-                    x_max = self._to_grid(m.position.x + m.length)
-                    y_min = self._to_grid(m.position.y)
-                    y_max = self._to_grid(m.position.y + m.width)
-                    z_start = self._to_grid(m.position.z + m.height)
-                    z_end   = self._to_grid(self.room.height)
-                    for x in range(x_min, x_max + 1):
-                        for y in range(y_min, y_max + 1):
-                            for z in range(z_start, z_end + 1):
-                                current_obstacles.add((x, y, z))
-
-    # ------------------------------------------------------------------
     # Fuzzy installability cost
     # ------------------------------------------------------------------
 
@@ -282,30 +267,30 @@ class AStar:
         Already-routed pipe paths are treated as soft obstacles
         (added to the obstacle set for this search).
         """
-        start = (self._to_grid(pipe.start.x),
-                 self._to_grid(pipe.start.y),
-                 self._to_grid(pipe.start.z))
-        goal  = (self._to_grid(pipe.end.x),
-                 self._to_grid(pipe.end.y),
-                 self._to_grid(pipe.end.z))
+        start = (self._to_grid(pipe.start.x, "x"),
+                 self._to_grid(pipe.start.y, "y"),
+                 self._to_grid(pipe.start.z, "z"))
+        goal  = (self._to_grid(pipe.end.x, "x"),
+                 self._to_grid(pipe.end.y, "y"),
+                 self._to_grid(pipe.end.z, "z"))
 
         # Copy static obstacles, then add previously routed pipe paths
         current_obs = self.obstacles.copy()
         for p in already_routed:
             if p.path:
                 for pos in p.path:
-                    current_obs.add((self._to_grid(pos.x),
-                                     self._to_grid(pos.y),
-                                     self._to_grid(pos.z)))
+                    current_obs.add((self._to_grid(pos.x, "x"),
+                                     self._to_grid(pos.y, "y"),
+                                     self._to_grid(pos.z, "z")))
 
-        self._apply_class_rules(pipe, current_obs)
+        # (Original Fuel rule would go here, but fluid_type is replaced by pipe_type)
 
         pipe_radius_mm = (pipe.diameter / 2.0) * 1000.0  # diameter in m → radius in mm
 
         # Grid bounds
-        max_gx = self._to_grid(self.room.length)
-        max_gy = self._to_grid(self.room.width)
-        max_gz = self._to_grid(self.room.height)
+        max_gx = self._to_grid(self.room.length, "x")
+        max_gy = self._to_grid(self.room.width, "y")
+        max_gz = self._to_grid(self.room.height, "z")
 
         # 6-connected directions
         directions = [(1,0,0),(-1,0,0),(0,1,0),(0,-1,0),(0,0,1),(0,0,-1)]
@@ -319,9 +304,9 @@ class AStar:
             f, _, g, current, path, last_dir = heapq.heappop(pq)
 
             if current == goal:
-                return [Position(self._to_world(n[0]),
-                                 self._to_world(n[1]),
-                                 self._to_world(n[2]))
+                return [Position(self._to_world(n[0], "x"),
+                                 self._to_world(n[1], "y"),
+                                 self._to_world(n[2], "z"))
                         for n in path]
 
             if g > visited.get(current, math.inf):
@@ -351,6 +336,15 @@ class AStar:
                 # Vertical penalty
                 if dz != 0:
                     move_cost += self.w_vertical
+
+                # Suction penalty: favor lower z
+                if pipe.suction_type == "Suction":
+                    # current_z = self._to_world(nb[2], "z")
+                    # Penalty increases with height. 
+                    # Minimum height is self.z_min_world (-0.5).
+                    # We add a cost proportional to the height above z_min.
+                    height_penalty = (nb[2]) * self.w_suction 
+                    move_cost += height_penalty
 
                 # Fuzzy installability penalty
                 move_cost += self._installability_cost(nb, pipe_radius_mm)
@@ -396,9 +390,9 @@ class AStar:
                 scores: List[float] = []
                 multipliers: List[float] = []
                 for pos in path:
-                    gx = self._to_grid(pos.x)
-                    gy = self._to_grid(pos.y)
-                    gz = self._to_grid(pos.z)
+                    gx = self._to_grid(pos.x, "x")
+                    gy = self._to_grid(pos.y, "y")
+                    gz = self._to_grid(pos.z, "z")
                     shape = self.clearance_map.shape
                     if (0 <= gx < shape[0] and
                             0 <= gy < shape[1] and

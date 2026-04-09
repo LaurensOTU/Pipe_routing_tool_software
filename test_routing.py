@@ -92,7 +92,8 @@ def build_scene():
         end=Position(x=8.5, y=6.5, z=1.0),
         diameter=0.2,
         priority=1,
-        fluid_type="General",
+        pipe_type="Closed",
+        suction_type="Pressurised",
     )
 
     return room, obstacle, pipe

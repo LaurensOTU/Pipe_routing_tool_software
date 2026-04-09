@@ -345,12 +345,14 @@ elif step == "3. Route Pipes":
             key="snap_mode_radio",
         )
         snap_z = col_z.slider(
-            "Snap plane height (m)",
-            min_value=0.0, max_value=room.height,
+            "Snap plane Z (height)",
+            min_value=-0.5,
+            max_value=float(room.height),
             value=st.session_state.pipe_sz,
             step=0.5,
             help="The horizontal plane the click grid sits on. Change this to place endpoints at different heights.",
         )
+
         snap_res = col_res.select_slider(
             "Grid snap resolution (m)",
             options=[1.0, 0.5, 0.25],
@@ -444,34 +446,37 @@ elif step == "3. Route Pipes":
     # -----------------------------------------------------------------------
     st.subheader("Add a Pipe")
 
-    with st.form("add_pipe_form", clear_on_submit=True):
-        p_name = st.text_input("Pipe name", value="Fuel Line")
-        c_a, c_b = st.columns(2)
-        p_diam = c_a.number_input("Diameter (m)", min_value=0.05, max_value=1.0, value=0.2, step=0.05)
-        p_prio = c_b.number_input("Priority (1 = highest)", min_value=1, max_value=20, value=1, step=1)
-        p_type = st.selectbox("Fluid type", ["General", "Fuel", "Water", "Electric"])
+    p_name = st.text_input("Pipe name", value="Main Line")
+    c_a, c_b = st.columns(2)
+    p_diam = c_a.number_input("Diameter (m)", min_value=0.05, max_value=1.0, value=0.2, step=0.05)
+    p_prio = c_b.number_input("Priority (1 = highest)", min_value=1, max_value=20, value=1, step=1)
+    
+    col_t1, col_t2 = st.columns(2)
+    p_type = col_t1.selectbox("Pipe Type", ["Closed", "Open"])
+    if p_type == "Closed":
+        p_suction = col_t2.selectbox("Pressurised/Suction", ["Pressurised", "Suction"])
+    else:
+        p_suction = "Pressurised"
 
-        st.markdown("**Start point (m)**  — or snap-select above 🟢")
-        s1, s2, s3 = st.columns(3)
-        sx = s1.number_input("Start X", min_value=0.0, max_value=room.length,
-                              value=float(st.session_state.pipe_sx), step=0.5)
-        sy = s2.number_input("Start Y", min_value=0.0, max_value=room.width,
-                              value=float(st.session_state.pipe_sy), step=0.5)
-        sz = s3.number_input("Start Z", min_value=0.0, max_value=room.height,
-                              value=float(st.session_state.pipe_sz), step=0.5)
+    st.markdown("**Start point (m)**  — or snap-select above 🟢")
+    s1, s2, s3 = st.columns(3)
+    sx = s1.number_input("Start X", min_value=0.0, max_value=room.length,
+                          value=float(st.session_state.pipe_sx), step=0.5)
+    sy = s2.number_input("Start Y", min_value=0.0, max_value=room.width,
+                          value=float(st.session_state.pipe_sy), step=0.5)
+    sz = s3.number_input("Start Z", min_value=-0.5, max_value=room.height,
+                          value=float(st.session_state.pipe_sz), step=0.5)
 
-        st.markdown("**End point (m)**  — or snap-select above 🔴")
-        e1, e2, e3 = st.columns(3)
-        ex = e1.number_input("End X", min_value=0.0, max_value=room.length,
-                              value=float(st.session_state.pipe_ex), step=0.5)
-        ey = e2.number_input("End Y", min_value=0.0, max_value=room.width,
-                              value=float(st.session_state.pipe_ey), step=0.5)
-        ez = e3.number_input("End Z", min_value=0.0, max_value=room.height,
-                              value=float(st.session_state.pipe_ez), step=0.5)
+    st.markdown("**End point (m)**  — or snap-select above 🔴")
+    e1, e2, e3 = st.columns(3)
+    ex = e1.number_input("End X", min_value=0.0, max_value=room.length,
+                          value=float(st.session_state.pipe_ex), step=0.5)
+    ey = e2.number_input("End Y", min_value=0.0, max_value=room.width,
+                          value=float(st.session_state.pipe_ey), step=0.5)
+    ez = e3.number_input("End Z", min_value=-0.5, max_value=room.height,
+                          value=float(st.session_state.pipe_ez), step=0.5)
 
-        pipe_submitted = st.form_submit_button("Add Pipe")
-
-    if pipe_submitted:
+    if st.button("Add Pipe"):
         new_pipe = Pipe(
             id=f"p_{len(st.session_state.pipe_list)}",
             name=p_name,
@@ -479,7 +484,8 @@ elif step == "3. Route Pipes":
             end=Position(ex, ey, ez),
             diameter=p_diam,
             priority=p_prio,
-            fluid_type=p_type,
+            pipe_type=p_type,
+            suction_type=p_suction,
         )
         st.session_state.pipe_list.append(new_pipe)
         st.success(f"Added pipe '{p_name}'")
@@ -509,8 +515,12 @@ elif step == "3. Route Pipes":
                 )
             else:
                 route_info = "  — not yet routed"
+            p_info = f"{p.pipe_type}"
+            if p.pipe_type == "Closed":
+                p_info += f" ({p.suction_type})"
+            
             c_i.text(
-                f"{p.name}  |  ⌀{p.diameter * 1000:.0f} mm  |  priority {p.priority}  |  "
+                f"{p.name}  |  ⌀{p.diameter * 1000:.0f} mm  |  {p_info}  |  priority {p.priority}  |  "
                 f"({p.start.x}, {p.start.y}, {p.start.z}) → "
                 f"({p.end.x}, {p.end.y}, {p.end.z}){route_info}"
             )
@@ -527,7 +537,7 @@ elif step == "3. Route Pipes":
     # -----------------------------------------------------------------------
     st.subheader("Routing Settings")
 
-    col_r1, col_r2, col_r3 = st.columns(3)
+    col_r1, col_r2, col_r3, col_r4 = st.columns(4)
     w_installability = col_r1.slider(
         "Installability weight",
         min_value=0.0, max_value=5.0, value=1.0, step=0.5,
@@ -542,6 +552,11 @@ elif step == "3. Route Pipes":
         "Tray preference",
         min_value=0.0, max_value=2.0, value=0.5, step=0.25,
         help="Cost discount per step next to a routing tray.",
+    )
+    w_suction = col_r4.slider(
+        "Suction low-z preference",
+        min_value=0.0, max_value=10.0, value=5.0, step=0.5,
+        help="Higher values force suction pipes to stay as low as possible.",
     )
 
     run_col, clr_col = st.columns([3, 1])
@@ -565,6 +580,7 @@ elif step == "3. Route Pipes":
                 w_vertical=1.5,
                 w_installability=w_installability,
                 w_tray=w_tray,
+                w_suction=w_suction,
             )
             routed = astar.route_all(st.session_state.pipe_list)
             st.session_state.pipe_list = routed

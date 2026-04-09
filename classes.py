@@ -76,7 +76,8 @@ class Pipe:
     end: Position
     diameter: float = 0.1          # metres
     priority: int = 1              # 1 = routed first
-    fluid_type: str = "General"    # "General" | "Fuel" | "Water" | "Electric"
+    pipe_type: Literal["Closed", "Open"] = "Closed"
+    suction_type: Optional[Literal["Pressurised", "Suction"]] = "Pressurised"
     path: Optional[List[Position]] = field(default=None)
 
     # Populated by AStar.route_all() after routing

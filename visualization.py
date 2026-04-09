@@ -218,12 +218,19 @@ def create_room_figure(
     # 1. Room wireframe
     # ------------------------------------------------------------------
     L, W, H = room.length, room.width, room.height
+    Z_MIN = -0.5
 
-    # Floor
+    # True Floor (bottom of the 0.5m space)
+    fig.add_trace(go.Scatter3d(
+        x=[0, L, L, 0, 0], y=[0, 0, W, W, 0], z=[Z_MIN, Z_MIN, Z_MIN, Z_MIN, Z_MIN],
+        mode='lines', name='True Bottom (-0.5m)',
+        line=dict(color='blue', width=1, dash='dot'), showlegend=True,
+    ))
+    # Engine Room Floor (z=0)
     fig.add_trace(go.Scatter3d(
         x=[0, L, L, 0, 0], y=[0, 0, W, W, 0], z=[0, 0, 0, 0, 0],
-        mode='lines', name='Floor',
-        line=dict(color='black', width=2), showlegend=False,
+        mode='lines', name='ER Floor (0m)',
+        line=dict(color='black', width=2), showlegend=True,
     ))
     # Ceiling
     fig.add_trace(go.Scatter3d(
@@ -234,7 +241,7 @@ def create_room_figure(
     # Verticals
     for vx, vy in [(0, 0), (L, 0), (L, W), (0, W)]:
         fig.add_trace(go.Scatter3d(
-            x=[vx, vx], y=[vy, vy], z=[0, H],
+            x=[vx, vx], y=[vy, vy], z=[Z_MIN, H],
             mode='lines', line=dict(color='black', width=2), showlegend=False,
         ))
 
