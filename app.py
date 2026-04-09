@@ -93,6 +93,7 @@ for key, default in [
     ("walking_space_list", []),
     ("routing_tray_list", []),
     ("pipe_list",         []),
+    ("machinery_edit_idx", None),
 ]:
     if key not in st.session_state:
         st.session_state[key] = default
@@ -149,61 +150,136 @@ elif step == "2. Place Machinery":
     room = st.session_state.room
 
     # -----------------------------------------------------------------------
-    # Add machinery form
+    # Interactive placement (Click on grid)
     # -----------------------------------------------------------------------
-    st.subheader("Add / Place a Machine")
+    st.subheader("Interactive Placement")
+    st.info("💡 Click a cyan dot on the grid to set the X/Y/Z position for the machine below.")
+    
+    col_z, col_res = st.columns([2, 2])
+    # Use existing session state for Z or a local one
+    if "mach_snap_z" not in st.session_state:
+        st.session_state.mach_snap_z = 0.0
+    
+    mach_z = col_z.slider("Snap plane Z", -0.5, float(room.height), st.session_state.mach_snap_z, 0.5)
+    st.session_state.mach_snap_z = mach_z
+    mach_res = col_res.select_slider("Grid resolution", [1.0, 0.5, 0.25], 0.5)
 
-    with st.form("add_machine_form", clear_on_submit=True):
-        m_name = st.text_input("Machine name", value="Main Engine")
+    fig_mach_snap = create_snap_figure(
+        room,
+        st.session_state.machinery_list,
+        snap_grid_z=mach_z,
+        grid_resolution=mach_res,
+        walking_spaces=st.session_state.walking_space_list,
+        routing_trays=st.session_state.routing_tray_list,
+    )
+    
+    snap_event = st.plotly_chart(fig_mach_snap, on_select="rerun", key="mach_snap_chart")
+    
+    # Pre-fill logic for coordinates if clicked
+    clicked_pos = (0.0, 0.0, mach_z)
+    if snap_event and "selection" in snap_event and snap_event["selection"]["points"]:
+        pt = snap_event["selection"]["points"][0]
+        cd = pt.get("customdata")
+        if cd:
+            clicked_pos = (float(cd[0]), float(cd[1]), float(cd[2]))
+        else:
+            clicked_pos = (float(pt["x"]), float(pt["y"]), mach_z)
+        st.toast(f"Position captured: {clicked_pos}", icon="📍")
+
+    # -----------------------------------------------------------------------
+    # Add / Edit machinery form
+    # -----------------------------------------------------------------------
+    edit_idx = st.session_state.machinery_edit_idx
+    is_editing = edit_idx is not None and edit_idx < len(st.session_state.machinery_list)
+    
+    if is_editing:
+        st.subheader(f"Editing: {st.session_state.machinery_list[edit_idx].name}")
+        m_curr = st.session_state.machinery_list[edit_idx]
+        default_name = m_curr.name
+        default_l, default_w, default_h = m_curr.length, m_curr.width, m_curr.height
+        default_x, default_y, default_z = m_curr.position.x, m_curr.position.y, m_curr.position.z
+        # If we just clicked, override the position
+        if snap_event and "selection" in snap_event and snap_event["selection"]["points"]:
+            default_x, default_y, default_z = clicked_pos
+        default_constraint = m_curr.constraint
+        default_type = m_curr.machine_type
+        btn_label = "Update Machine"
+    else:
+        st.subheader("Add a New Machine")
+        default_name = "Main Engine"
+        default_l, default_w, default_h = 2.0, 2.0, 1.5
+        default_x, default_y, default_z = clicked_pos
+        default_constraint = "floor"
+        default_type = "General"
+        btn_label = "Add Machine"
+
+    with st.form("machinery_form", clear_on_submit=False):
+        m_name = st.text_input("Machine name", value=default_name)
 
         c1, c2, c3 = st.columns(3)
-        m_l = c1.number_input("Length (m)", min_value=0.1, max_value=room.length,  value=2.0, step=0.1)
-        m_w = c2.number_input("Width (m)",  min_value=0.1, max_value=room.width,   value=2.0, step=0.1)
-        m_h = c3.number_input("Height (m)", min_value=0.1, max_value=room.height,  value=1.5, step=0.1)
+        m_l = c1.number_input("Length (m)", min_value=0.1, max_value=room.length,  value=default_l, step=0.1)
+        m_w = c2.number_input("Width (m)",  min_value=0.1, max_value=room.width,   value=default_w, step=0.1)
+        m_h = c3.number_input("Height (m)", min_value=0.1, max_value=room.height,  value=default_h, step=0.1)
 
         st.markdown("**Position — bottom-left-front corner (m)**")
         p1, p2, p3 = st.columns(3)
-        m_x = p1.number_input("X position", min_value=0.0, max_value=room.length, value=0.0, step=0.5)
-        m_y = p2.number_input("Y position", min_value=0.0, max_value=room.width,  value=0.0, step=0.5)
-        m_z = p3.number_input("Z position", min_value=0.0, max_value=room.height, value=0.0, step=0.5)
+        m_x = p1.number_input("X position", min_value=0.0, max_value=room.length, value=default_x, step=0.1)
+        m_y = p2.number_input("Y position", min_value=0.0, max_value=room.width,  value=default_y, step=0.1)
+        m_z = p3.number_input("Z position", min_value=-0.5, max_value=room.height, value=default_z, step=0.1)
 
         c4, c5 = st.columns(2)
-        m_constraint = c4.selectbox("Constraint",    ["free", "wall", "floor"])
-        m_type       = c5.selectbox("Machine type",  ["General", "Switchboard", "Hot Surface"])
+        m_constraint = c4.selectbox("Constraint", ["free", "wall", "floor"], index=["free", "wall", "floor"].index(default_constraint))
+        m_type       = c5.selectbox("Machine type", ["General", "Switchboard", "Hot Surface"], index=["General", "Switchboard", "Hot Surface"].index(default_type))
 
-        submitted = st.form_submit_button("Add Machine")
+        submitted = st.form_submit_button(btn_label)
 
     if submitted:
-        new_id = f"m_{len(st.session_state.machinery_list)}"
         new_machine = Machinery(
-            id=new_id, name=m_name,
+            id=m_curr.id if is_editing else f"m_{len(st.session_state.machinery_list)}",
+            name=m_name,
             length=m_l, width=m_w, height=m_h,
             constraint=m_constraint, machine_type=m_type,
             position=Position(m_x, m_y, m_z),
         )
-        st.session_state.machinery_list.append(new_machine)
-        st.success(f"Added '{m_name}' at ({m_x}, {m_y}, {m_z})")
+        if is_editing:
+            st.session_state.machinery_list[edit_idx] = new_machine
+            st.session_state.machinery_edit_idx = None
+            st.success(f"Updated '{m_name}'")
+        else:
+            st.session_state.machinery_list.append(new_machine)
+            st.success(f"Added '{m_name}'")
         st.rerun()
+    
+    if is_editing:
+        if st.button("Cancel Edit"):
+            st.session_state.machinery_edit_idx = None
+            st.rerun()
 
     # -----------------------------------------------------------------------
-    # Machine list + remove buttons
+    # Machine list + edit/remove buttons
     # -----------------------------------------------------------------------
     if st.session_state.machinery_list:
         st.subheader(f"Placed machinery ({len(st.session_state.machinery_list)} items)")
         for idx, m in enumerate(st.session_state.machinery_list):
-            col_info, col_btn = st.columns([5, 1])
+            col_info, col_edit, col_rm = st.columns([4, 1, 1])
             with col_info:
                 pos = m.position
                 st.text(
                     f"{m.name}  |  {m.length}×{m.width}×{m.height} m  "
                     f"|  pos ({pos.x}, {pos.y}, {pos.z})  |  {m.machine_type}"
                 )
-            with col_btn:
-                if st.button("Remove", key=f"rm_{idx}"):
+            with col_edit:
+                if st.button("Edit", key=f"edit_m_{idx}"):
+                    st.session_state.machinery_edit_idx = idx
+                    st.rerun()
+            with col_rm:
+                if st.button("Remove", key=f"rm_m_{idx}"):
                     st.session_state.machinery_list.pop(idx)
+                    if st.session_state.machinery_edit_idx == idx:
+                        st.session_state.machinery_edit_idx = None
                     st.rerun()
     else:
-        st.info("No machinery placed yet. Use the form above to add machines.")
+        st.info("No machinery placed yet. Use the grid and form above to add machines.")
 
     st.divider()
 

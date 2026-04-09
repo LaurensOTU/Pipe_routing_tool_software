@@ -192,6 +192,73 @@ def _add_box_3d(fig: go.Figure, xn, yn, zn, xx, yx, zx, name, colour, opacity):
         ))
 
 
+def _add_pipe_volume(fig: go.Figure, pipe: Pipe, colour: str, opacity: float = 0.8):
+    """
+    Visualises a pipe as a 3D volume by grouping orthogonal segments 
+    into long cuboids (realistic diameter).
+    """
+    if not pipe.path or len(pipe.path) < 2:
+        return
+
+    r = pipe.diameter / 2.0
+    path = pipe.path
+    
+    # Group segments into long orthogonal boxes to reduce trace count
+    segments = []
+    if len(path) >= 2:
+        curr_start = path[0]
+        for i in range(1, len(path)):
+            prev = path[i-1]
+            curr = path[i]
+            
+            # If direction changes or it's the last point, close the current segment
+            # (In A*, segments are always orthogonal, so we check which axis changed)
+            is_last = (i == len(path) - 1)
+            
+            # Simple greedy merge: if we are still moving in the same direction, continue
+            # However, for simplicity and robustness with different step sizes, 
+            # we'll just draw a box for every segment for now, but use a single Mesh3d trace.
+            
+    # To keep it efficient, we'll build arrays for a single Mesh3d trace per pipe
+    all_x, all_y, all_z = [], [], []
+    all_i, all_j, all_k = [], [], []
+    
+    vert_offset = 0
+    
+    for i in range(1, len(path)):
+        p1 = path[i-1]
+        p2 = path[i]
+        
+        xn, xx = min(p1.x, p2.x) - r, max(p1.x, p2.x) + r
+        yn, yx = min(p1.y, p2.y) - r, max(p1.y, p2.y) + r
+        zn, zx = min(p1.z, p2.z) - r, max(p1.z, p2.z) + r
+        
+        # Vertices for this segment's box
+        all_x.extend([xn, xx, xx, xn, xn, xx, xx, xn])
+        all_y.extend([yn, yn, yx, yx, yn, yn, yx, yx])
+        all_z.extend([zn, zn, zn, zn, zx, zx, zx, zx])
+        
+        # Faces for this segment's box
+        # (Standard 12 triangles for a cuboid)
+        i_idx = [0, 0, 4, 4, 0, 0, 1, 1, 0, 0, 3, 3]
+        j_idx = [1, 2, 5, 6, 4, 7, 5, 6, 1, 5, 2, 6]
+        k_idx = [2, 3, 6, 7, 7, 3, 6, 2, 5, 4, 6, 7]
+        
+        all_i.extend([idx + vert_offset for idx in i_idx])
+        all_j.extend([idx + vert_offset for idx in j_idx])
+        all_k.extend([idx + vert_offset for idx in k_idx])
+        
+        vert_offset += 8
+
+    fig.add_trace(go.Mesh3d(
+        x=all_x, y=all_y, z=all_z,
+        i=all_i, j=all_j, k=all_k,
+        color=colour, opacity=opacity,
+        name=f"{pipe.name} (Volume)",
+        showlegend=True
+    ))
+
+
 def create_room_figure(
     room: Room,
     machinery_list: List[Machinery] = [],
@@ -304,10 +371,6 @@ def create_room_figure(
         if not p.path:
             continue
         
-        px = [pos.x for pos in p.path]
-        py = [pos.y for pos in p.path]
-        pz = [pos.z for pos in p.path]
-        
         # Color by installability if scored
         score = getattr(p, 'avg_installability_score', 1.0)
         # 1.0 -> green, 0.5 -> yellow, 0.0 -> red
@@ -318,12 +381,19 @@ def create_room_figure(
         else:
             pipe_color = "crimson"
             
+        # Add 3D volume
+        _add_pipe_volume(fig, p, pipe_color, opacity=0.7)
+
+        # Add thin center line for clarity
+        px = [pos.x for pos in p.path]
+        py = [pos.y for pos in p.path]
+        pz = [pos.z for pos in p.path]
         fig.add_trace(go.Scatter3d(
             x=px, y=py, z=pz,
-            mode='lines+markers',
-            name=f"{p.name} (Score: {score:.2f})",
-            line=dict(color=pipe_color, width=4),
-            marker=dict(size=2, color=pipe_color)
+            mode='lines',
+            name=f"{p.name} (Centerline, Score: {score:.2f})",
+            line=dict(color="black", width=2),
+            showlegend=False
         ))
 
     # ------------------------------------------------------------------

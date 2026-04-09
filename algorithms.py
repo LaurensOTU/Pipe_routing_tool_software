@@ -121,6 +121,8 @@ class AStar:
                            z.x_max, z.y_max, z.z_max)
         for w in self.walking_spaces:
             # Walking space blocks pipes from z=0 up to w.height (default 2.1 m)
+            # We use a slightly more conservative grid filling to ensure pipes 
+            # don't skim the very edge of the walkway.
             self._fill_box(w.x_min, w.y_min, 0.0,
                            w.x_max, w.y_max, w.height)
 
