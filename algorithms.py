@@ -32,7 +32,7 @@ class AStar:
     walking_spaces    : List[WalkingSpace] — crew walkways (pipes forbidden 0→2.1 m)
     routing_trays     : List[RoutingTray] — preferred tray zones (cost discount)
     fuzzy             : FuzzyInstallability — pre-built fuzzy module (optional)
-    grid_resolution   : float — cell size in metres (default 0.5 m)
+    grid_resolution   : float — cell size in metres (default 0.1 m for pathfinding)
     w_dist            : float — base movement cost weight
     w_bend            : float — penalty per direction change
     w_vertical        : float — penalty per vertical step
@@ -50,7 +50,7 @@ class AStar:
         walking_spaces: List[WalkingSpace] = None,
         routing_trays: List[RoutingTray] = None,
         fuzzy: FuzzyInstallability = None,
-        grid_resolution: float = 0.5,
+        grid_resolution: float = 0.1,
         w_dist: float = 1.0,
         w_bend: float = 2.0,
         w_vertical: float = 1.5,
@@ -356,18 +356,17 @@ class AStar:
                 move_cost += self._installability_cost(nb, pipe_radius_mm)
 
                 # Routing tray discount (makes tray cells cheaper to traverse)
-                if self.w_tray > 0 and nb in self.tray_cells:
-                    move_cost = max(0.1, move_cost - self.w_tray)
+                if nb in self.tray_cells:
+                    move_cost = max(0.0, move_cost - self.w_tray)
 
                 new_g = g + move_cost
-
                 if new_g < visited.get(nb, math.inf):
                     visited[nb] = new_g
                     h = self._heuristic(nb, goal)
                     counter += 1
                     heapq.heappush(
                         pq,
-                        (new_g + h, counter, new_g, nb, path + [nb], new_dir)
+                        (new_g + h, counter, new_g, nb, path + [nb], new_dir),
                     )
 
         return None  # No path found
@@ -378,46 +377,42 @@ class AStar:
 
     def route_all(self, pipes: List[Pipe]) -> List[Pipe]:
         """
-        Route all pipes in priority order (priority 1 = highest).
-        Stores path and installability metrics on each Pipe object.
-        Returns the list with paths filled in.
+        Route every pipe in priority order (priority 1 = first).
+
+        Each pipe's path is stored in pipe.path.
+        If fuzzy scoring is active, pipe.avg_installability_score and
+        pipe.avg_time_multiplier are also populated.
         """
         sorted_pipes = sorted(pipes, key=lambda p: p.priority)
         routed: List[Pipe] = []
 
         for pipe in sorted_pipes:
             path = self.find_path(pipe, routed)
+            pipe.path = path
 
-            if path:
-                pipe.path = path
-
-                # --- Compute per-pipe average installability score ---
-                if self.clearance_map is not None and self.fuzzy is not None:
-                    pipe_radius_mm = (pipe.diameter / 2.0) * 1000.0
-                    scores, multipliers = [], []
-
-                    for pos in path:
-                        gx = self._to_grid(pos.x)
-                        gy = self._to_grid(pos.y)
-                        gz = self._to_grid(pos.z)
-                        shape = self.clearance_map.shape
-                        if (0 <= gx < shape[0] and
-                                0 <= gy < shape[1] and
-                                0 <= gz < shape[2]):
-                            raw = self.clearance_map[gx, gy, gz]
-                            eff = max(50.0, raw - pipe_radius_mm)
-                            _, mult, score = self.fuzzy.get_score(eff)
-                            scores.append(score)
-                            multipliers.append(mult)
-
-                    if scores:
-                        pipe.avg_installability_score = round(
-                            float(np.mean(scores)), 3)
-                        pipe.avg_time_multiplier      = round(
-                            float(np.mean(multipliers)), 3)
-            else:
-                pipe.path = None
-                print(f"[AStar] WARNING: No path found for pipe '{pipe.name}'")
+            # Compute per-path installability averages when fuzzy is active
+            if path and self.fuzzy is not None and self.clearance_map is not None:
+                pipe_radius_mm = (pipe.diameter / 2.0) * 1000.0
+                scores: List[float] = []
+                multipliers: List[float] = []
+                for pos in path:
+                    gx = self._to_grid(pos.x)
+                    gy = self._to_grid(pos.y)
+                    gz = self._to_grid(pos.z)
+                    shape = self.clearance_map.shape
+                    if (0 <= gx < shape[0] and
+                            0 <= gy < shape[1] and
+                            0 <= gz < shape[2]):
+                        raw_cl = float(self.clearance_map[gx, gy, gz])
+                        eff_cl = max(50.0, raw_cl - pipe_radius_mm)
+                        _, mult, score = self.fuzzy.get_score(eff_cl)
+                        scores.append(score)
+                        multipliers.append(mult)
+                if scores:
+                    pipe.avg_installability_score = round(
+                        sum(scores) / len(scores), 3)
+                    pipe.avg_time_multiplier = round(
+                        sum(multipliers) / len(multipliers), 3)
 
             routed.append(pipe)
 

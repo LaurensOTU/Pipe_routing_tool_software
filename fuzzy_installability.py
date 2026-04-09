@@ -88,7 +88,9 @@ class FuzzyInstallability:
     """
 
     def __init__(self, csv_path: str = None):
-        self.universe = np.arange(50, 1250, 10, dtype=float)  # 50–1249 mm in 10mm steps
+        self.min_val      = 50.0   # Default floor
+        self.max_val      = 1250.0 # Default ceiling
+        self.universe     = np.arange(self.min_val, self.max_val, 10, dtype=float)
         self.centers      = dict(DEFAULT_CENTERS)
         self.multipliers  = dict(DEFAULT_MULTIPLIERS)
         self.mf_arrays    = {}
@@ -114,13 +116,21 @@ class FuzzyInstallability:
             self.n_responses = len(df)
             print(f"[FuzzyInstallability] Loaded {self.n_responses} questionnaire responses.")
 
+            all_vals = []
             # Space threshold centers
             for key, col in SPACE_COLS.items():
                 if col in df.columns:
                     vals = pd.to_numeric(df[col], errors='coerce').dropna()
                     if len(vals) > 0:
+                        all_vals.extend(vals.tolist())
                         self.centers[key] = float(vals.mean())
                         self.stds[key]    = float(vals.std(ddof=1)) if len(vals) > 1 else 0.0
+
+            if all_vals:
+                self.min_val = max(0.0, min(all_vals))
+                self.max_val = max(all_vals) + 100.0
+                # Re-build universe with new bounds
+                self.universe = np.arange(self.min_val, self.max_val, 10, dtype=float)
 
             # Time multipliers
             for key, col in MULT_COLS.items():
@@ -164,20 +174,35 @@ class FuzzyInstallability:
 
         for idx, key in enumerate(ORDERED_CATS):
             center = c[idx]
-            # Neighbour midpoints define triangle/Gaussian extent
-            left  = 50.0   if idx == 0     else (c[idx - 1] + c[idx]) / 2.0
-            right = 1249.0 if idx == n - 1 else (c[idx] + c[idx + 1]) / 2.0
+            # Neighbour midpoints define triangle extent
+            left  = self.min_val      if idx == 0     else (c[idx - 1] + c[idx]) / 2.0
+            right = self.max_val - 1  if idx == n - 1 else (c[idx] + c[idx + 1]) / 2.0
 
             if self.n_responses > 3 and self.stds[key] > 0:
                 sigma = max(self.stds[key], 20.0)
                 mf = self._gaussmf(self.universe, center, sigma)
+                
+                # Apply "Shoulders":
+                if idx == 0: # Impossible: Stay at 1.0 for everything below the mean
+                    mf[self.universe <= center] = 1.0
+                elif idx == n - 1: # Clear: Stay at 1.0 for everything above the mean
+                    mf[self.universe >= center] = 1.0
             else:
-                a = max(50.0,   left)
+                a = left
                 b = float(center)
-                cc = min(1249.0, right)
-                b  = max(b, a + 1.0)
-                cc = max(cc, b + 1.0)
-                mf = self._trimf(self.universe, a, b, cc)
+                cc = right
+                
+                # For triangular shoulders:
+                if idx == 0:
+                    mf = self._trimf(self.universe, a, b, cc)
+                    mf[self.universe <= b] = 1.0
+                elif idx == n - 1:
+                    mf = self._trimf(self.universe, a, b, cc)
+                    mf[self.universe >= b] = 1.0
+                else:
+                    b  = max(b, a + 1.0)
+                    cc = max(cc, b + 1.0)
+                    mf = self._trimf(self.universe, a, b, cc)
 
             self.mf_arrays[key] = mf
 

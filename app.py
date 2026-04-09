@@ -380,10 +380,10 @@ elif step == "3. Route Pipes":
             "Top-down floor plan — click a cyan dot to place the selected endpoint."
         )
 
-        # Key encodes snap state so the chart always re-renders with fresh markers.
-        _snap_chart_key = (
-            f"snap_chart_{st.session_state.snap_start}_{st.session_state.snap_end}"
-        )
+        # Stable key so the widget survives reruns and on_select can fire.
+        # The figure itself is rebuilt each run with updated markers, so the
+        # key does NOT need to change when snap_start / snap_end change.
+        _snap_chart_key = "snap_chart"
         try:
             snap_event = st.plotly_chart(
                 fig_snap,
@@ -472,12 +472,14 @@ elif step == "3. Route Pipes":
         pipe_submitted = st.form_submit_button("Add Pipe")
 
     if pipe_submitted:
-        new_id   = f"p_{len(st.session_state.pipe_list)}"
         new_pipe = Pipe(
-            id=new_id, name=p_name,
+            id=f"p_{len(st.session_state.pipe_list)}",
+            name=p_name,
             start=Position(sx, sy, sz),
             end=Position(ex, ey, ez),
-            diameter=p_diam, priority=p_prio, fluid_type=p_type,
+            diameter=p_diam,
+            priority=p_prio,
+            fluid_type=p_type,
         )
         st.session_state.pipe_list.append(new_pipe)
         st.success(f"Added pipe '{p_name}'")
@@ -487,123 +489,133 @@ elif step == "3. Route Pipes":
     # Pipe list
     # -----------------------------------------------------------------------
     if st.session_state.pipe_list:
-        st.subheader(f"Pipes ({len(st.session_state.pipe_list)} items)")
+        st.subheader(f"Pipes to route ({len(st.session_state.pipe_list)} items)")
+        import math as _math
         for idx, p in enumerate(st.session_state.pipe_list):
-            col_info, col_btn = st.columns([5, 1])
-            with col_info:
-                routed = "✓ Routed" if p.path else "— Not routed"
-                score_txt = (
-                    f"  |  Installability: {p.avg_installability_score:.2f}  "
-                    f"|  Time mult: {p.avg_time_multiplier:.2f}×"
-                    if p.path and p.avg_installability_score < 1.0 else ""
+            c_i, c_b = st.columns([5, 1])
+            if p.path:
+                total = sum(
+                    _math.sqrt(
+                        (p.path[i].x - p.path[i - 1].x) ** 2 +
+                        (p.path[i].y - p.path[i - 1].y) ** 2 +
+                        (p.path[i].z - p.path[i - 1].z) ** 2
+                    )
+                    for i in range(1, len(p.path))
                 )
-                st.text(
-                    f"{p.name}  |  ⌀{p.diam_str() if hasattr(p,'diam_str') else str(p.diameter)} m  "
-                    f"|  Priority {p.priority}  |  {p.fluid_type}  |  {routed}{score_txt}"
+                route_info = (
+                    f"  ✓ {total:.2f} m  |  "
+                    f"install {p.avg_installability_score:.2f}  |  "
+                    f"time {p.avg_time_multiplier:.2f}×"
                 )
-            with col_btn:
-                if st.button("Remove", key=f"rmp_{idx}"):
-                    st.session_state.pipe_list.pop(idx)
-                    st.rerun()
+            else:
+                route_info = "  — not yet routed"
+            c_i.text(
+                f"{p.name}  |  ⌀{p.diameter * 1000:.0f} mm  |  priority {p.priority}  |  "
+                f"({p.start.x}, {p.start.y}, {p.start.z}) → "
+                f"({p.end.x}, {p.end.y}, {p.end.z}){route_info}"
+            )
+            if c_b.button("Remove", key=f"rmp_{idx}"):
+                st.session_state.pipe_list.pop(idx)
+                st.rerun()
     else:
-        st.info("No pipes added yet.")
+        st.info("No pipes added yet. Use the form above.")
 
     st.divider()
 
     # -----------------------------------------------------------------------
-    # Routing settings
+    # Routing settings + run button
     # -----------------------------------------------------------------------
     st.subheader("Routing Settings")
 
-    col_r1, col_r2, col_r3, col_r4, col_r5 = st.columns(5)
-    w_dist = col_r1.slider("Distance weight",        0.1, 5.0,  1.0, 0.1)
-    w_bend = col_r2.slider("Bend penalty",           0.0, 10.0, 2.0, 0.5)
-    w_vert = col_r3.slider("Vertical penalty",       0.0, 10.0, 1.5, 0.5)
-    w_inst = col_r4.slider("Installability penalty", 0.0, 5.0,  0.0, 0.5,
-                           help="0 = pure shortest path. Increase to prefer more accessible routes.")
-    w_tray = col_r5.slider("Tray preference",        0.0, 2.0,  0.5, 0.1,
-                           help="Cost discount per step inside a routing tray. 0 = ignore trays.")
-
-    col_g1, col_g2 = st.columns(2)
-    grid_res = col_g1.select_slider(
-        "Grid resolution (m)", options=[0.5, 0.25, 0.1], value=0.5,
-        help="Finer grid = more accurate routing but slower. 0.5 m recommended for interactive use."
+    col_r1, col_r2, col_r3 = st.columns(3)
+    w_installability = col_r1.slider(
+        "Installability weight",
+        min_value=0.0, max_value=5.0, value=1.0, step=0.5,
+        help="0 = shortest path only; higher values prefer more accessible clearance.",
+    )
+    w_bend = col_r2.slider(
+        "Bend penalty",
+        min_value=0.0, max_value=5.0, value=2.0, step=0.5,
+        help="Cost per direction change — higher values produce straighter routes.",
+    )
+    w_tray = col_r3.slider(
+        "Tray preference",
+        min_value=0.0, max_value=2.0, value=0.5, step=0.25,
+        help="Cost discount per step next to a routing tray.",
     )
 
-    # Fuzzy module info
-    if w_inst > 0:
-        n = st.session_state.fuzzy.n_responses
-        st.info(
-            f"**Fuzzy installability penalty active** (weight = {w_inst})  "
-            f"— calibrated on **{n} questionnaire response{'s' if n != 1 else ''}**."
+    run_col, clr_col = st.columns([3, 1])
+
+    if run_col.button(
+        "🚀  Route All Pipes",
+        type="primary",
+        disabled=not st.session_state.pipe_list,
+    ):
+        with st.spinner("Building grid and running A* routing…  (0.1 m resolution)"):
+            astar = AStar(
+                room=room,
+                machinery_list=st.session_state.machinery_list,
+                no_go_zones=st.session_state.no_go_zones,
+                walking_spaces=st.session_state.walking_space_list,
+                routing_trays=st.session_state.routing_tray_list,
+                fuzzy=fuzzy,
+                grid_resolution=0.1,   # fine pathfinding grid; snap grid is separate
+                w_dist=1.0,
+                w_bend=w_bend,
+                w_vertical=1.5,
+                w_installability=w_installability,
+                w_tray=w_tray,
+            )
+            routed = astar.route_all(st.session_state.pipe_list)
+            st.session_state.pipe_list = routed
+        st.success("Routing complete!")
+        st.rerun()
+
+    if clr_col.button("Clear routes", disabled=not st.session_state.pipe_list):
+        for p in st.session_state.pipe_list:
+            p.path = None
+            p.avg_installability_score = 1.0
+            p.avg_time_multiplier = 1.0
+        st.rerun()
+
+    # -----------------------------------------------------------------------
+    # 3D result visualisation + summary table
+    # -----------------------------------------------------------------------
+    if any(p.path for p in st.session_state.pipe_list):
+        st.subheader("3D Route Visualisation")
+        fig3d = create_room_figure(
+            room,
+            st.session_state.machinery_list,
+            st.session_state.pipe_list,
+            st.session_state.no_go_zones,
+            walking_spaces=st.session_state.walking_space_list,
+            routing_trays=st.session_state.routing_tray_list,
         )
+        st.plotly_chart(fig3d, use_container_width=True)
 
-    # -----------------------------------------------------------------------
-    # Route button
-    # -----------------------------------------------------------------------
-    if st.button("▶  Route All Pipes (A*)", type="primary"):
-        if not st.session_state.pipe_list:
-            st.warning("Add at least one pipe first.")
-        else:
-            with st.spinner("Building clearance map and routing..."):
-                astar = AStar(
-                    room=room,
-                    machinery_list=st.session_state.machinery_list,
-                    no_go_zones=st.session_state.no_go_zones,
-                    walking_spaces=st.session_state.walking_space_list,
-                    routing_trays=st.session_state.routing_tray_list,
-                    fuzzy=st.session_state.fuzzy if w_inst > 0 else None,
-                    grid_resolution=grid_res,
-                    w_dist=w_dist,
-                    w_bend=w_bend,
-                    w_vertical=w_vert,
-                    w_installability=w_inst,
-                    w_tray=w_tray,
+        st.subheader("Route Summary")
+        import pandas as _pd
+        import math as _math2
+        rows = []
+        for p in st.session_state.pipe_list:
+            if p.path:
+                total = sum(
+                    _math2.sqrt(
+                        (p.path[i].x - p.path[i - 1].x) ** 2 +
+                        (p.path[i].y - p.path[i - 1].y) ** 2 +
+                        (p.path[i].z - p.path[i - 1].z) ** 2
+                    )
+                    for i in range(1, len(p.path))
                 )
-                st.session_state.pipe_list = astar.route_all(
-                    st.session_state.pipe_list
-                )
-            st.success("Routing complete!")
-            st.rerun()
-
-    # -----------------------------------------------------------------------
-    # Results table
-    # -----------------------------------------------------------------------
-    routed_pipes = [p for p in st.session_state.pipe_list if p.path]
-    if routed_pipes:
-        st.subheader("Routing Results")
-        import math
-        results = []
-        for p in routed_pipes:
-            # Path length
-            path_len = 0.0
-            for i in range(1, len(p.path)):
-                dx = p.path[i].x - p.path[i-1].x
-                dy = p.path[i].y - p.path[i-1].y
-                dz = p.path[i].z - p.path[i-1].z
-                path_len += math.sqrt(dx**2 + dy**2 + dz**2)
-            results.append({
-                "Pipe":              p.name,
-                "Length (m)":        round(path_len, 2),
-                "Segments":          len(p.path),
-                "Installability":    p.avg_installability_score,
-                "Time multiplier":   f"{p.avg_time_multiplier:.2f}×",
-            })
-
-        import pandas as pd
-        df = pd.DataFrame(results)
-        st.dataframe(df, use_container_width=True)
-
-    # -----------------------------------------------------------------------
-    # 3D visualisation
-    # -----------------------------------------------------------------------
-    st.subheader("3D Routing Visualisation")
-    fig = create_room_figure(
-        room,
-        st.session_state.machinery_list,
-        st.session_state.pipe_list,
-        st.session_state.no_go_zones,
-        walking_spaces=st.session_state.walking_space_list,
-        routing_trays=st.session_state.routing_tray_list,
-    )
-    st.plotly_chart(fig, use_container_width=True)
+                rows.append({
+                    "Pipe":           p.name,
+                    "⌀ (mm)":         f"{p.diameter * 1000:.0f}",
+                    "Priority":       p.priority,
+                    "Length (m)":     f"{total:.2f}",
+                    "Install score":  f"{p.avg_installability_score:.3f}",
+                    "Time mult":      f"{p.avg_time_multiplier:.2f}×",
+                    "Waypoints":      len(p.path),
+                })
+        if rows:
+            st.dataframe(_pd.DataFrame(rows), use_container_width=True)
+       

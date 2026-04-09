@@ -55,7 +55,8 @@ class WalkingSpace:
 class RoutingTray:
     """
     Dedicated pipe / cable tray.  Engineers define the full 3-D bounding box.
-    Pipes are strongly preferred to route through trays (lower A* cost).
+    The A* router treats the tray interior as an obstacle (pipes run alongside,
+    not through) and gives a cost discount to cells immediately adjacent.
     """
     id: str
     name: str
@@ -66,16 +67,18 @@ class RoutingTray:
     y_max: float
     z_max: float
 
+
 @dataclass
 class Pipe:
     id: str
     name: str
     start: Position
     end: Position
-    diameter: float
-    priority: int  # 1 is highest priority
-    fluid_type: Literal["General", "Fuel", "Water", "Electric"] = "General"
-    path: Optional[List[Position]] = None
-    # Fuzzy installability metrics — populated after routing
+    diameter: float = 0.1          # metres
+    priority: int = 1              # 1 = routed first
+    fluid_type: str = "General"    # "General" | "Fuel" | "Water" | "Electric"
+    path: Optional[List[Position]] = field(default=None)
+
+    # Populated by AStar.route_all() after routing
     avg_installability_score: float = 1.0   # 0.0 (impossible) → 1.0 (clear)
-    avg_time_multiplier: float = 1.0         # 1.0 = baseline install time
+    avg_time_multiplier: float = 1.0         # 1.0 = baseline installation time
