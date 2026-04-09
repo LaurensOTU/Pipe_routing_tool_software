@@ -158,6 +158,40 @@ def create_snap_figure(
     return fig
 
 
+def _add_box_3d(fig: go.Figure, xn, yn, zn, xx, yx, zx, name, colour, opacity):
+    """Helper to add a 3D box (Mesh3d faces + Scatter3d edges) to the figure."""
+    # Vertices
+    # 0:(n,n,n), 1:(x,n,n), 2:(x,x,n), 3:(n,x,n)
+    # 4:(n,n,x), 5:(x,n,x), 6:(x,x,x), 7:(n,x,x)
+    x = [xn, xx, xx, xn, xn, xx, xx, xn]
+    y = [yn, yn, yx, yx, yn, yn, yx, yx]
+    z = [zn, zn, zn, zn, zx, zx, zx, zx]
+
+    # Faces (12 triangles)
+    i = [0, 0, 4, 4, 0, 0, 1, 1, 0, 0, 3, 3]
+    j = [1, 2, 5, 6, 4, 7, 5, 6, 1, 5, 2, 6]
+    k = [2, 3, 6, 7, 7, 3, 6, 2, 5, 4, 6, 7]
+
+    fig.add_trace(go.Mesh3d(
+        x=x, y=y, z=z, i=i, j=j, k=k,
+        color=colour, opacity=opacity,
+        name=name, showlegend=True,
+    ))
+
+    # Edges
+    edge_coords = [
+        (0,1), (1,2), (2,3), (3,0), # bottom
+        (4,5), (5,6), (6,7), (7,4), # top
+        (0,4), (1,5), (2,6), (3,7)  # verticals
+    ]
+    for start, end in edge_coords:
+        fig.add_trace(go.Scatter3d(
+            x=[x[start], x[end]], y=[y[start], y[end]], z=[z[start], z[end]],
+            mode='lines', line=dict(color=colour, width=2),
+            showlegend=False, hoverinfo='skip'
+        ))
+
+
 def create_room_figure(
     room: Room,
     machinery_list: List[Machinery] = [],
@@ -214,4 +248,119 @@ def create_room_figure(
     }
     for m in machinery_list:
         if not m.position:
-            co
+            continue
+        colour, opacity = machine_colours.get(m.machine_type, ("royalblue", 0.45))
+        _add_box_3d(
+            fig,
+            m.position.x, m.position.y, m.position.z,
+            m.position.x + m.length, m.position.y + m.width, m.position.z + m.height,
+            m.name, colour, opacity
+        )
+
+    # ------------------------------------------------------------------
+    # 3. No-Go Zones
+    # ------------------------------------------------------------------
+    for z in zones:
+        _add_box_3d(
+            fig,
+            z.x_min, z.y_min, z.z_min,
+            z.x_max, z.y_max, z.z_max,
+            f"No-Go: {z.id}", "grey", 0.20
+        )
+
+    # ------------------------------------------------------------------
+    # 4. Walking Spaces
+    # ------------------------------------------------------------------
+    for w in walking_spaces:
+        _add_box_3d(
+            fig,
+            w.x_min, w.y_min, 0.0,
+            w.x_max, w.y_max, w.height,
+            f"🚶 {w.name}", "green", 0.15
+        )
+
+    # ------------------------------------------------------------------
+    # 5. Routing Trays
+    # ------------------------------------------------------------------
+    for t in routing_trays:
+        _add_box_3d(
+            fig,
+            t.x_min, t.y_min, t.z_min,
+            t.x_max, t.y_max, t.z_max,
+            f"▭ {t.name}", "silver", 0.30
+        )
+
+    # ------------------------------------------------------------------
+    # 6. Routed Pipes
+    # ------------------------------------------------------------------
+    for p in pipes:
+        if not p.path:
+            continue
+        
+        px = [pos.x for pos in p.path]
+        py = [pos.y for pos in p.path]
+        pz = [pos.z for pos in p.path]
+        
+        # Color by installability if scored
+        score = getattr(p, 'avg_installability_score', 1.0)
+        # 1.0 -> green, 0.5 -> yellow, 0.0 -> red
+        if score > 0.8:
+            pipe_color = "limegreen"
+        elif score > 0.5:
+            pipe_color = "gold"
+        else:
+            pipe_color = "crimson"
+            
+        fig.add_trace(go.Scatter3d(
+            x=px, y=py, z=pz,
+            mode='lines+markers',
+            name=f"{p.name} (Score: {score:.2f})",
+            line=dict(color=pipe_color, width=4),
+            marker=dict(size=2, color=pipe_color)
+        ))
+
+    # ------------------------------------------------------------------
+    # 7. Optional Snap Grid / Markers
+    # ------------------------------------------------------------------
+    if snap_grid_z is not None:
+        xs, ys, zs = [], [], []
+        for gx in np.arange(0, L + grid_resolution * 0.5, grid_resolution):
+            for gy in np.arange(0, W + grid_resolution * 0.5, grid_resolution):
+                xs.append(min(gx, L))
+                ys.append(min(gy, W))
+                zs.append(snap_grid_z)
+        fig.add_trace(go.Scatter3d(
+            x=xs, y=ys, z=zs,
+            mode='markers',
+            marker=dict(size=2, color='cyan', opacity=0.3),
+            name="Snap grid plane",
+            showlegend=False,
+            hoverinfo='skip'
+        ))
+
+    if snap_start:
+        fig.add_trace(go.Scatter3d(
+            x=[snap_start.x], y=[snap_start.y], z=[snap_start.z],
+            mode='markers',
+            marker=dict(size=8, color='limegreen', symbol='circle'),
+            name="Selected Start"
+        ))
+    if snap_end:
+        fig.add_trace(go.Scatter3d(
+            x=[snap_end.x], y=[snap_end.y], z=[snap_end.z],
+            mode='markers',
+            marker=dict(size=8, color='tomato', symbol='circle'),
+            name="Selected End"
+        ))
+
+    fig.update_layout(
+        scene=dict(
+            xaxis_title="Length (X)",
+            yaxis_title="Width (Y)",
+            zaxis_title="Height (Z)",
+            aspectmode='data'
+        ),
+        margin=dict(l=0, r=0, b=0, t=30),
+        height=600
+    )
+    return fig
