@@ -58,6 +58,9 @@ _available_csvs = _scan_csvs([_local_data, _ext_folder])
 # Sidebar — Logo and Questionnaire dataset selector
 # ---------------------------------------------------------------------------
 st.sidebar.image(os.path.join(_here, "Damen_logo.png"), use_container_width=True)
+st.sidebar.markdown("<h3 style='text-align: center; margin-top: -10px; margin-bottom: -10px;'>×</h3>", unsafe_allow_html=True)
+st.sidebar.image(os.path.join(_here, "TU_Delft_Logo.svg.png"), use_container_width=True)
+
 st.sidebar.divider()
 st.sidebar.subheader("Fuzzy Calibration Data")
 
@@ -121,14 +124,15 @@ step = st.sidebar.radio(
 # ===========================================================================
 if step == "1. Define Room":
     st.header("Step 1: Define Engine Room Dimensions")
+    st.subheader("Convension: X axis is from aft to fore, Y is starboard to port, Z is from keel upwards", )
 
     col1, col2, col3 = st.columns(3)
     with col1:
-        length = st.number_input("Length (m)", min_value=1.0, value=10.0, step=0.5)
+        length = st.number_input("X: Length (m)", min_value=1.0, value=8.0, step=0.5)
     with col2:
-        width  = st.number_input("Width (m)",  min_value=1.0, value=8.0,  step=0.5)
+        width  = st.number_input("Y: Width (m)",  min_value=1.0, value=10.0,  step=0.5)
     with col3:
-        height = st.number_input("Height (m)", min_value=1.0, value=5.0,  step=0.5)
+        height = st.number_input("Z: Height (m)", min_value=1.0, value=5.0,  step=0.5)
 
     if st.button("Initialise Room"):
         st.session_state.room = Room(length=length, width=width, height=height)
