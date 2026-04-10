@@ -55,8 +55,9 @@ def _scan_csvs(folders: list) -> dict:
 _available_csvs = _scan_csvs([_local_data, _ext_folder])
 
 # ---------------------------------------------------------------------------
-# Sidebar — Questionnaire dataset selector
+# Sidebar — Logo and Questionnaire dataset selector
 # ---------------------------------------------------------------------------
+st.sidebar.image(os.path.join(_here, "Damen_logo.png"), use_container_width=True)
 st.sidebar.divider()
 st.sidebar.subheader("Fuzzy Calibration Data")
 
