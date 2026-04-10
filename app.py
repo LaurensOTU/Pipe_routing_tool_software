@@ -189,16 +189,22 @@ elif step == "2. Place Machinery":
     
     snap_event = st.plotly_chart(fig_mach_snap, on_select="rerun", key="mach_snap_chart")
     
-    # Pre-fill logic for coordinates if clicked
-    clicked_pos = (0.0, 0.0, mach_z)
+    # Pre-fill logic for coordinates and dimensions if area is selected
+    # Initialize defaults
+    sel_x_min, sel_x_max = 0.0, 2.0
+    sel_y_min, sel_y_max = 0.0, 2.0
+    area_captured = False
+
     if snap_event and "selection" in snap_event and snap_event["selection"]["points"]:
-        pt = snap_event["selection"]["points"][0]
-        cd = pt.get("customdata")
-        if cd:
-            clicked_pos = (float(cd[0]), float(cd[1]), float(cd[2]))
-        else:
-            clicked_pos = (float(pt["x"]), float(pt["y"]), mach_z)
-        st.toast(f"Position captured: {clicked_pos}", icon="📍")
+        pts = snap_event["selection"]["points"]
+        xs = [float(p.get("customdata")[0] if p.get("customdata") else p.get("x")) for p in pts]
+        ys = [float(p.get("customdata")[1] if p.get("customdata") else p.get("y")) for p in pts]
+        
+        if xs and ys:
+            sel_x_min, sel_x_max = min(xs), max(xs)
+            sel_y_min, sel_y_max = min(ys), max(ys)
+            area_captured = True
+            st.toast(f"Area captured: {sel_x_min:.1f}-{sel_x_max:.1f}m x {sel_y_min:.1f}-{sel_y_max:.1f}m", icon="📐")
 
     # -----------------------------------------------------------------------
     # Add / Edit machinery form
@@ -212,17 +218,23 @@ elif step == "2. Place Machinery":
         default_name = m_curr.name
         default_l, default_w, default_h = m_curr.length, m_curr.width, m_curr.height
         default_x, default_y, default_z = m_curr.position.x, m_curr.position.y, m_curr.position.z
-        # If we just clicked, override the position
-        if snap_event and "selection" in snap_event and snap_event["selection"]["points"]:
-            default_x, default_y, default_z = clicked_pos
+        
+        if area_captured:
+            default_x, default_y = sel_x_min, sel_y_min
+            if sel_x_max > sel_x_min: default_l = round(sel_x_max - sel_x_min, 2)
+            if sel_y_max > sel_y_min: default_w = round(sel_y_max - sel_y_min, 2)
+            default_z = mach_z
+            
         default_constraint = m_curr.constraint
         default_type = m_curr.machine_type
         btn_label = "Update Machine"
     else:
         st.subheader("Add a New Machine")
         default_name = "Main Engine"
-        default_l, default_w, default_h = 2.0, 2.0, 1.5
-        default_x, default_y, default_z = clicked_pos
+        default_l = round(sel_x_max - sel_x_min, 2) if area_captured else 2.0
+        default_w = round(sel_y_max - sel_y_min, 2) if area_captured else 2.0
+        default_h = 1.5
+        default_x, default_y, default_z = (sel_x_min, sel_y_min, mach_z) if area_captured else (0.0, 0.0, mach_z)
         default_constraint = "floor"
         default_type = "General"
         btn_label = "Add Machine"
@@ -310,10 +322,10 @@ elif step == "2. Place Machinery":
         ws_name = st.text_input("Name", value="Main walkway")
         st.markdown("**XY footprint (m)**")
         wc1, wc2, wc3, wc4 = st.columns(4)
-        ws_x0 = wc1.number_input("X min", min_value=0.0, max_value=room.length, value=0.0, step=0.5)
-        ws_x1 = wc2.number_input("X max", min_value=0.0, max_value=room.length, value=2.0, step=0.5)
-        ws_y0 = wc3.number_input("Y min", min_value=0.0, max_value=room.width,  value=0.0, step=0.5)
-        ws_y1 = wc4.number_input("Y max", min_value=0.0, max_value=room.width,  value=room.width, step=0.5)
+        ws_x0 = wc1.number_input("X min", min_value=0.0, max_value=room.length, value=sel_x_min, step=0.5)
+        ws_x1 = wc2.number_input("X max", min_value=0.0, max_value=room.length, value=sel_x_max if area_captured else sel_x_min+2.0, step=0.5)
+        ws_y0 = wc3.number_input("Y min", min_value=0.0, max_value=room.width,  value=sel_y_min, step=0.5)
+        ws_y1 = wc4.number_input("Y max", min_value=0.0, max_value=room.width,  value=sel_y_max if area_captured else room.width, step=0.5)
         st.info("Height is fixed at **2.1 m** (head-clearance requirement).")
         ws_submitted = st.form_submit_button("Add Walking Space")
 
@@ -352,15 +364,15 @@ elif step == "2. Place Machinery":
         with rc1:
             st.markdown("*Min corner*")
             rca, rcb, rcc = st.columns(3)
-            rt_x0 = rca.number_input("X min", min_value=0.0, max_value=room.length, value=0.0, step=0.5, key="rt_x0")
-            rt_y0 = rcb.number_input("Y min", min_value=0.0, max_value=room.width,  value=0.0, step=0.5, key="rt_y0")
-            rt_z0 = rcc.number_input("Z min", min_value=0.0, max_value=room.height, value=room.height - 0.5, step=0.5, key="rt_z0")
+            rt_x0 = rca.number_input("X min", min_value=0.0, max_value=room.length, value=sel_x_min, step=0.5, key="rt_x0")
+            rt_y0 = rcb.number_input("Y min", min_value=0.0, max_value=room.width,  value=sel_y_min, step=0.5, key="rt_y0")
+            rt_z0 = rcc.number_input("Z min", min_value=0.0, max_value=room.height, value=mach_z, step=0.5, key="rt_z0")
         with rc2:
             st.markdown("*Max corner*")
             rcd, rce, rcf = st.columns(3)
-            rt_x1 = rcd.number_input("X max", min_value=0.0, max_value=room.length, value=room.length, step=0.5, key="rt_x1")
-            rt_y1 = rce.number_input("Y max", min_value=0.0, max_value=room.width,  value=0.5,         step=0.5, key="rt_y1")
-            rt_z1 = rcf.number_input("Z max", min_value=0.0, max_value=room.height, value=room.height,  step=0.5, key="rt_z1")
+            rt_x1 = rcd.number_input("X max", min_value=0.0, max_value=room.length, value=sel_x_max if area_captured else sel_x_min+room.length, step=0.5, key="rt_x1")
+            rt_y1 = rce.number_input("Y max", min_value=0.0, max_value=room.width,  value=sel_y_max if area_captured else sel_y_min+0.5, step=0.5, key="rt_y1")
+            rt_z1 = rcf.number_input("Z max", min_value=0.0, max_value=room.height, value=mach_z + 0.5 if mach_z + 0.5 <= room.height else room.height,  step=0.5, key="rt_z1")
         rt_submitted = st.form_submit_button("Add Routing Tray")
 
     if rt_submitted:
