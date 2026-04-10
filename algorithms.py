@@ -283,11 +283,12 @@ class AStar:
                                      self._to_grid(pos.y, "y"),
                                      self._to_grid(pos.z, "z")))
 
-        # Check if start or end are blocked
+        # Check if start or end are strictly blocked (but allow if they are on the very edge)
+        # We handle this by removing start/goal from current_obs for THIS pipe's search.
         if start in current_obs:
-            return None, "Start point blocked by obstacle"
+            current_obs.remove(start)
         if goal in current_obs:
-            return None, "End point blocked by obstacle"
+            current_obs.remove(goal)
 
         # Grid bounds
         max_gx = self._to_grid(self.room.length, "x")

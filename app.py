@@ -95,6 +95,7 @@ for key, default in [
     ("routing_tray_list", []),
     ("pipe_list",         []),
     ("machinery_edit_idx", None),
+    ("pipe_edit_idx",      None),
 ]:
     if key not in st.session_state:
         st.session_state[key] = default
@@ -519,54 +520,97 @@ elif step == "3. Route Pipes":
             st.rerun()
 
     # -----------------------------------------------------------------------
-    # Add pipe form  (coordinates pre-filled from snap selection)
+    # Add / Edit pipe form  (coordinates pre-filled from snap selection)
     # -----------------------------------------------------------------------
-    st.subheader("Add a Pipe")
+    p_edit_idx = st.session_state.pipe_edit_idx
+    is_p_editing = p_edit_idx is not None and p_edit_idx < len(st.session_state.pipe_list)
 
-    p_name = st.text_input("Pipe name", value="Main Line")
-    c_a, c_b = st.columns(2)
-    p_diam = c_a.number_input("Diameter (m)", min_value=0.05, max_value=1.0, value=0.2, step=0.05)
-    p_prio = c_b.number_input("Priority (1 = highest)", min_value=1, max_value=20, value=1, step=1)
-    
-    col_t1, col_t2 = st.columns(2)
-    p_type = col_t1.selectbox("Pipe Type", ["Closed", "Open"])
-    if p_type == "Closed":
-        p_suction = col_t2.selectbox("Pressurised/Suction", ["Pressurised", "Suction"])
+    if is_p_editing:
+        st.subheader(f"Editing Pipe: {st.session_state.pipe_list[p_edit_idx].name}")
+        p_curr = st.session_state.pipe_list[p_edit_idx]
+        default_p_name = p_curr.name
+        default_p_diam = p_curr.diameter
+        default_p_prio = p_curr.priority
+        default_p_type = p_curr.pipe_type
+        default_p_suction = p_curr.suction_type
+        default_sx, default_sy, default_sz = p_curr.start.x, p_curr.start.y, p_curr.start.z
+        default_ex, default_ey, default_ez = p_curr.end.x, p_curr.end.y, p_curr.end.z
+        
+        # Override with clicks if snap was active
+        if snap_event and snap_event.selection.points:
+             # Logic for which point was clicked (start or end) is handled by snap_mode
+             pass
+        # Pre-fill from session state anyway (snap clicks update these)
+        default_sx, default_sy, default_sz = float(st.session_state.pipe_sx), float(st.session_state.pipe_sy), float(st.session_state.pipe_sz)
+        default_ex, default_ey, default_ez = float(st.session_state.pipe_ex), float(st.session_state.pipe_ey), float(st.session_state.pipe_ez)
+        
+        btn_p_label = "Update Pipe"
     else:
-        p_suction = "Pressurised"
+        st.subheader("Add a New Pipe")
+        default_p_name = "Main Line"
+        default_p_diam = 0.2
+        default_p_prio = 1
+        default_p_type = "Closed"
+        default_p_suction = "Pressurised"
+        default_sx, default_sy, default_sz = float(st.session_state.pipe_sx), float(st.session_state.pipe_sy), float(st.session_state.pipe_sz)
+        default_ex, default_ey, default_ez = float(st.session_state.pipe_ex), float(st.session_state.pipe_ey), float(st.session_state.pipe_ez)
+        btn_p_label = "Add Pipe"
 
-    st.markdown("**Start point (m)**  — or snap-select above 🟢")
-    s1, s2, s3 = st.columns(3)
-    sx = s1.number_input("Start X", min_value=0.0, max_value=room.length,
-                          value=float(st.session_state.pipe_sx), step=0.5)
-    sy = s2.number_input("Start Y", min_value=0.0, max_value=room.width,
-                          value=float(st.session_state.pipe_sy), step=0.5)
-    sz = s3.number_input("Start Z", min_value=-0.5, max_value=room.height,
-                          value=float(st.session_state.pipe_sz), step=0.5)
+    with st.form("pipe_form", clear_on_submit=False):
+        p_name = st.text_input("Pipe name", value=default_p_name)
+        c_a, c_b = st.columns(2)
+        p_diam = c_a.number_input("Diameter (m)", min_value=0.05, max_value=1.0, value=default_p_diam, step=0.05)
+        p_prio = c_b.number_input("Priority (1 = highest)", min_value=1, max_value=20, value=default_p_prio, step=1)
+        
+        col_t1, col_t2 = st.columns(2)
+        p_type_idx = ["Closed", "Open"].index(default_p_type)
+        p_type = col_t1.selectbox("Pipe Type", ["Closed", "Open"], index=p_type_idx)
+        
+        suction_options = ["Pressurised", "Suction"]
+        default_suction_idx = suction_options.index(default_p_suction) if default_p_suction in suction_options else 0
+        if p_type == "Closed":
+            p_suction = col_t2.selectbox("Pressurised/Suction", suction_options, index=default_suction_idx)
+        else:
+            p_suction = "Pressurised"
 
-    st.markdown("**End point (m)**  — or snap-select above 🔴")
-    e1, e2, e3 = st.columns(3)
-    ex = e1.number_input("End X", min_value=0.0, max_value=room.length,
-                          value=float(st.session_state.pipe_ex), step=0.5)
-    ey = e2.number_input("End Y", min_value=0.0, max_value=room.width,
-                          value=float(st.session_state.pipe_ey), step=0.5)
-    ez = e3.number_input("End Z", min_value=-0.5, max_value=room.height,
-                          value=float(st.session_state.pipe_ez), step=0.5)
+        st.markdown("**Start point (m)**  — or snap-select above 🟢")
+        s1, s2, s3 = st.columns(3)
+        sx_in = s1.number_input("Start X", min_value=0.0, max_value=room.length, value=default_sx, step=0.5)
+        sy_in = s2.number_input("Start Y", min_value=0.0, max_value=room.width,  value=default_sy, step=0.5)
+        sz_in = s3.number_input("Start Z", min_value=-0.5, max_value=room.height, value=default_sz, step=0.5)
 
-    if st.button("Add Pipe"):
+        st.markdown("**End point (m)**  — or snap-select above 🔴")
+        e1, e2, e3 = st.columns(3)
+        ex_in = e1.number_input("End X", min_value=0.0, max_value=room.length, value=default_ex, step=0.5)
+        ey_in = e2.number_input("End Y", min_value=0.0, max_value=room.width,  value=default_ey, step=0.5)
+        ez_in = e3.number_input("End Z", min_value=-0.5, max_value=room.height, value=default_ez, step=0.5)
+
+        p_submitted = st.form_submit_button(btn_p_label)
+
+    if p_submitted:
         new_pipe = Pipe(
-            id=f"p_{len(st.session_state.pipe_list)}",
+            id=p_curr.id if is_p_editing else f"p_{len(st.session_state.pipe_list)}",
             name=p_name,
-            start=Position(sx, sy, sz),
-            end=Position(ex, ey, ez),
+            start=Position(sx_in, sy_in, sz_in),
+            end=Position(ex_in, ey_in, ez_in),
             diameter=p_diam,
             priority=p_prio,
             pipe_type=p_type,
             suction_type=p_suction,
         )
-        st.session_state.pipe_list.append(new_pipe)
-        st.success(f"Added pipe '{p_name}'")
+        if is_p_editing:
+            st.session_state.pipe_list[p_edit_idx] = new_pipe
+            st.session_state.pipe_edit_idx = None
+            st.success(f"Updated pipe '{p_name}'")
+        else:
+            st.session_state.pipe_list.append(new_pipe)
+            st.success(f"Added pipe '{p_name}'")
         st.rerun()
+
+    if is_p_editing:
+        if st.button("Cancel Pipe Edit"):
+            st.session_state.pipe_edit_idx = None
+            st.rerun()
 
     # -----------------------------------------------------------------------
     # Pipe list
@@ -575,7 +619,7 @@ elif step == "3. Route Pipes":
         st.subheader(f"Pipes to route ({len(st.session_state.pipe_list)} items)")
         import math as _math
         for idx, p in enumerate(st.session_state.pipe_list):
-            c_i, c_b = st.columns([5, 1])
+            col_pipe_info, col_pipe_edit, col_pipe_rm = st.columns([4, 1, 1])
             if p.path:
                 total = sum(
                     _math.sqrt(
@@ -597,14 +641,29 @@ elif step == "3. Route Pipes":
             if p.pipe_type == "Closed":
                 p_info += f" ({p.suction_type})"
             
-            c_i.text(
-                f"{p.name}  |  ⌀{p.diameter * 1000:.0f} mm  |  {p_info}  |  priority {p.priority}  |  "
-                f"({p.start.x}, {p.start.y}, {p.start.z}) → "
-                f"({p.end.x}, {p.end.y}, {p.end.z}){route_info}"
-            )
-            if c_b.button("Remove", key=f"rmp_{idx}"):
-                st.session_state.pipe_list.pop(idx)
-                st.rerun()
+            with col_pipe_info:
+                st.text(
+                    f"{p.name}  |  ⌀{p.diameter * 1000:.0f} mm  |  {p_info}  |  prio {p.priority}  |  "
+                    f"({p.start.x}, {p.start.y}, {p.start.z}) → "
+                    f"({p.end.x}, {p.end.y}, {p.end.z}){route_info}"
+                )
+            
+            with col_pipe_edit:
+                if st.button("Edit", key=f"edit_p_{idx}"):
+                    st.session_state.pipe_edit_idx = idx
+                    # Set snap coordinates to current pipe values for easier editing
+                    st.session_state.pipe_sx, st.session_state.pipe_sy, st.session_state.pipe_sz = p.start.x, p.start.y, p.start.z
+                    st.session_state.pipe_ex, st.session_state.pipe_ey, st.session_state.pipe_ez = p.end.x, p.end.y, p.end.z
+                    st.session_state.snap_start = (p.start.x, p.start.y, p.start.z)
+                    st.session_state.snap_end = (p.end.x, p.end.y, p.end.z)
+                    st.rerun()
+            
+            with col_pipe_rm:
+                if st.button("Remove", key=f"rmp_{idx}"):
+                    st.session_state.pipe_list.pop(idx)
+                    if st.session_state.pipe_edit_idx == idx:
+                        st.session_state.pipe_edit_idx = None
+                    st.rerun()
     else:
         st.info("No pipes added yet. Use the form above.")
 
