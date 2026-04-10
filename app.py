@@ -14,6 +14,7 @@ from classes import Room, Machinery, Pipe, NoGoZone, Position, WalkingSpace, Rou
 from visualization import create_room_figure, create_snap_figure
 from algorithms import AStar
 from fuzzy_installability import FuzzyInstallability
+from export_utils import export_to_obj
 
 # ---------------------------------------------------------------------------
 # Page config
@@ -684,6 +685,26 @@ elif step == "3. Route Pipes":
             routing_trays=st.session_state.routing_tray_list,
         )
         st.plotly_chart(fig3d, use_container_width=True)
+
+        # -----------------------------------------------------------------------
+        # Export to CAD (OBJ)
+        # -----------------------------------------------------------------------
+        st.subheader("Export to CAD")
+        obj_content = export_to_obj(
+            room,
+            st.session_state.machinery_list,
+            st.session_state.pipe_list,
+            st.session_state.no_go_zones,
+            st.session_state.walking_space_list,
+            st.session_state.routing_tray_list,
+        )
+        st.download_button(
+            label="📥 Download 3D Model (.obj)",
+            data=obj_content,
+            file_name="damen_pipe_layout.obj",
+            mime="text/plain",
+            help="Download the full engine room layout, including machinery and routed pipes, as an OBJ file compatible with Rhino, Solidworks, and other CAD tools."
+        )
 
         st.subheader("Route Summary")
         import pandas as _pd

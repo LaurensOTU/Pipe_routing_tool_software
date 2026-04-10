@@ -194,61 +194,55 @@ def _add_box_3d(fig: go.Figure, xn, yn, zn, xx, yx, zx, name, colour, opacity):
 
 def _add_pipe_volume(fig: go.Figure, pipe: Pipe, colour: str, opacity: float = 0.8):
     """
-    Visualises a pipe as a 3D volume by grouping orthogonal segments 
-    into long cuboids (realistic diameter).
+    Visualises a pipe as a 3D cylindrical volume.
     """
     if not pipe.path or len(pipe.path) < 2:
         return
 
     r = pipe.diameter / 2.0
     path = pipe.path
+    sides = 12  # Number of sides for the cylinder approximation
     
-    # Group segments into long orthogonal boxes to reduce trace count
-    segments = []
-    if len(path) >= 2:
-        curr_start = path[0]
-        for i in range(1, len(path)):
-            prev = path[i-1]
-            curr = path[i]
-            
-            # If direction changes or it's the last point, close the current segment
-            # (In A*, segments are always orthogonal, so we check which axis changed)
-            is_last = (i == len(path) - 1)
-            
-            # Simple greedy merge: if we are still moving in the same direction, continue
-            # However, for simplicity and robustness with different step sizes, 
-            # we'll just draw a box for every segment for now, but use a single Mesh3d trace.
-            
-    # To keep it efficient, we'll build arrays for a single Mesh3d trace per pipe
     all_x, all_y, all_z = [], [], []
     all_i, all_j, all_k = [], [], []
-    
     vert_offset = 0
-    
+
+    import math
+
     for i in range(1, len(path)):
-        p1 = path[i-1]
-        p2 = path[i]
+        p1, p2 = path[i-1], path[i]
         
-        xn, xx = min(p1.x, p2.x) - r, max(p1.x, p2.x) + r
-        yn, yx = min(p1.y, p2.y) - r, max(p1.y, p2.y) + r
-        zn, zx = min(p1.z, p2.z) - r, max(p1.z, p2.z) + r
+        # Direction vector
+        dx, dy, dz = p2.x - p1.x, p2.y - p1.y, p2.z - p1.z
         
-        # Vertices for this segment's box
-        all_x.extend([xn, xx, xx, xn, xn, xx, xx, xn])
-        all_y.extend([yn, yn, yx, yx, yn, yn, yx, yx])
-        all_z.extend([zn, zn, zn, zn, zx, zx, zx, zx])
-        
-        # Faces for this segment's box
-        # (Standard 12 triangles for a cuboid)
-        i_idx = [0, 0, 4, 4, 0, 0, 1, 1, 0, 0, 3, 3]
-        j_idx = [1, 2, 5, 6, 4, 7, 5, 6, 1, 5, 2, 6]
-        k_idx = [2, 3, 6, 7, 7, 3, 6, 2, 5, 4, 6, 7]
-        
-        all_i.extend([idx + vert_offset for idx in i_idx])
-        all_j.extend([idx + vert_offset for idx in j_idx])
-        all_k.extend([idx + vert_offset for idx in k_idx])
-        
-        vert_offset += 8
+        # Orthogonal vectors for the circle (A* is orthogonal, so this is simple)
+        if abs(dx) > 1e-5:   # X-axis pipe
+            v1, v2 = (0, r, 0), (0, 0, r)
+        elif abs(dy) > 1e-5: # Y-axis pipe
+            v1, v2 = (r, 0, 0), (0, 0, r)
+        else:                # Z-axis pipe
+            v1, v2 = (r, 0, 0), (0, r, 0)
+
+        # Generate vertices for start and end circles
+        for p in [p1, p2]:
+            for s in range(sides):
+                angle = 2 * math.pi * s / sides
+                all_x.append(p.x + math.cos(angle) * v1[0] + math.sin(angle) * v2[0])
+                all_y.append(p.y + math.cos(angle) * v1[1] + math.sin(angle) * v2[1])
+                all_z.append(p.z + math.cos(angle) * v1[2] + math.sin(angle) * v2[2])
+
+        # Generate faces (side panels)
+        for s in range(sides):
+            s_next = (s + 1) % sides
+            v1_idx, v2_idx = vert_offset + s, vert_offset + s_next
+            v3_idx, v4_idx = vert_offset + sides + s, vert_offset + sides + s_next
+            
+            # Two triangles per quad panel
+            all_i.extend([v1_idx, v1_idx, v2_idx])
+            all_j.extend([v2_idx, v4_idx, v4_idx])
+            all_k.extend([v4_idx, v3_idx, v3_idx])
+
+        vert_offset += 2 * sides
 
     fig.add_trace(go.Mesh3d(
         x=all_x, y=all_y, z=all_z,
