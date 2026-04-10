@@ -591,7 +591,8 @@ elif step == "3. Route Pipes":
                     f"time {p.avg_time_multiplier:.2f}×"
                 )
             else:
-                route_info = "  — not yet routed"
+                reason = f" — {p.routing_status}" if p.routing_status else " — not yet routed"
+                route_info = reason
             p_info = f"{p.pipe_type}"
             if p.pipe_type == "Closed":
                 p_info += f" ({p.suction_type})"

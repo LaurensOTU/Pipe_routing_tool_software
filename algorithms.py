@@ -262,12 +262,10 @@ class AStar:
                 abs(node[2] - goal[2]))
 
     def find_path(self, pipe: Pipe,
-                  already_routed: List[Pipe]) -> Optional[List[Position]]:
+                  already_routed: List[Pipe]) -> Tuple[Optional[List[Position]], str]:
         """
         Find the optimal path for one pipe using A*.
-
-        Already-routed pipe paths are treated as soft obstacles
-        (added to the obstacle set for this search).
+        Returns (path, status_message).
         """
         start = (self._to_grid(pipe.start.x, "x"),
                  self._to_grid(pipe.start.y, "y"),
@@ -285,14 +283,18 @@ class AStar:
                                      self._to_grid(pos.y, "y"),
                                      self._to_grid(pos.z, "z")))
 
-        # (Original Fuel rule would go here, but fluid_type is replaced by pipe_type)
-
-        pipe_radius_mm = (pipe.diameter / 2.0) * 1000.0  # diameter in m → radius in mm
+        # Check if start or end are blocked
+        if start in current_obs:
+            return None, "Start point blocked by obstacle"
+        if goal in current_obs:
+            return None, "End point blocked by obstacle"
 
         # Grid bounds
         max_gx = self._to_grid(self.room.length, "x")
         max_gy = self._to_grid(self.room.width, "y")
         max_gz = self._to_grid(self.room.height, "z")
+
+        pipe_radius_mm = (pipe.diameter / 2.0) * 1000.0  # diameter in m → radius in mm
 
         # 6-connected directions
         directions = [(1,0,0),(-1,0,0),(0,1,0),(0,-1,0),(0,0,1),(0,0,-1)]
@@ -306,10 +308,11 @@ class AStar:
             f, _, g, current, path, last_dir = heapq.heappop(pq)
 
             if current == goal:
-                return [Position(self._to_world(n[0], "x"),
-                                 self._to_world(n[1], "y"),
-                                 self._to_world(n[2], "z"))
-                        for n in path]
+                world_path = [Position(self._to_world(n[0], "x"),
+                                      self._to_world(n[1], "y"),
+                                      self._to_world(n[2], "z"))
+                             for n in path]
+                return world_path, "Success"
 
             if g > visited.get(current, math.inf):
                 continue
@@ -341,17 +344,13 @@ class AStar:
 
                 # Suction penalty: favor lower z
                 if pipe.suction_type == "Suction":
-                    # current_z = self._to_world(nb[2], "z")
-                    # Penalty increases with height. 
-                    # Minimum height is self.z_min_world (-0.5).
-                    # We add a cost proportional to the height above z_min.
                     height_penalty = (nb[2]) * self.w_suction 
                     move_cost += height_penalty
 
                 # Fuzzy installability penalty
                 move_cost += self._installability_cost(nb, pipe_radius_mm)
 
-                # Routing tray discount (makes tray cells cheaper to traverse)
+                # Routing tray discount
                 if nb in self.tray_cells:
                     move_cost = max(0.0, move_cost - self.w_tray)
 
@@ -365,7 +364,7 @@ class AStar:
                         (new_g + h, counter, new_g, nb, path + [nb], new_dir),
                     )
 
-        return None  # No path found
+        return None, "No path found (Insufficient space)"
 
     # ------------------------------------------------------------------
     # Route all pipes
@@ -374,17 +373,14 @@ class AStar:
     def route_all(self, pipes: List[Pipe]) -> List[Pipe]:
         """
         Route every pipe in priority order (priority 1 = first).
-
-        Each pipe's path is stored in pipe.path.
-        If fuzzy scoring is active, pipe.avg_installability_score and
-        pipe.avg_time_multiplier are also populated.
         """
         sorted_pipes = sorted(pipes, key=lambda p: p.priority)
         routed: List[Pipe] = []
 
         for pipe in sorted_pipes:
-            path = self.find_path(pipe, routed)
+            path, status = self.find_path(pipe, routed)
             pipe.path = path
+            pipe.routing_status = status
 
             # Compute per-path installability averages when fuzzy is active
             if path and self.fuzzy is not None and self.clearance_map is not None:

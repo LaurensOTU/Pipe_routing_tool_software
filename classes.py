@@ -83,3 +83,4 @@ class Pipe:
     # Populated by AStar.route_all() after routing
     avg_installability_score: float = 1.0   # 0.0 (impossible) → 1.0 (clear)
     avg_time_multiplier: float = 1.0         # 1.0 = baseline installation time
+    routing_status: Optional[str] = None    # "Success", "Start/End blocked", "No path", etc.
