@@ -25,28 +25,34 @@ st.title("Damen OSV — Pipe Routing & Installability Tool")
 # ---------------------------------------------------------------------------
 # Locate available questionnaire CSVs
 # ---------------------------------------------------------------------------
-_here      = os.path.dirname(os.path.abspath(__file__))
-_q_folder  = os.path.normpath(
+_here       = os.path.dirname(os.path.abspath(__file__))
+_local_data = os.path.join(_here, "data")
+_ext_folder = os.path.normpath(
     os.path.join(_here, "..", "Graduation_python_project", "Questionnaire data")
 )
 
-def _scan_csvs(folder: str) -> dict:
-    """Return {display_label: full_path} for every CSV in the questionnaire folder."""
+def _scan_csvs(folders: list) -> dict:
+    """Return {display_label: full_path} for every CSV in the given folders."""
     found = {}
-    if os.path.isdir(folder):
-        for fname in sorted(os.listdir(folder)):
-            if fname.lower().endswith(".csv"):
-                full = os.path.join(folder, fname)
-                # Quick response count (lines - 1 for header)
-                try:
-                    with open(full, encoding="utf-8", errors="ignore") as fh:
-                        n = sum(1 for _ in fh) - 1
-                except Exception:
-                    n = "?"
-                found[f"{fname}  ({n} responses)"] = full
+    for folder in folders:
+        if os.path.isdir(folder):
+            for fname in sorted(os.listdir(folder)):
+                if fname.lower().endswith(".csv"):
+                    full = os.path.join(folder, fname)
+                    # Quick response count
+                    try:
+                        with open(full, encoding="utf-8", errors="ignore") as fh:
+                            n = sum(1 for _ in fh) - 1
+                    except Exception:
+                        n = "?"
+                    
+                    label = f"{fname} ({n} resp)"
+                    if folder == _local_data:
+                        label = f"📁 [Local] {label}"
+                    found[label] = full
     return found
 
-_available_csvs = _scan_csvs(_q_folder)
+_available_csvs = _scan_csvs([_local_data, _ext_folder])
 
 # ---------------------------------------------------------------------------
 # Sidebar — Questionnaire dataset selector
@@ -55,9 +61,10 @@ st.sidebar.divider()
 st.sidebar.subheader("Fuzzy Calibration Data")
 
 if _available_csvs:
+    # Prefer our newly copied local file as default
     _default_key = next(
-        (k for k in _available_csvs if "firstdraft" in k.lower()),
-        list(_available_csvs.keys())[-1],   # fall back to last file
+        (k for k in _available_csvs if "questionnaire_data.csv" in k.lower()),
+        list(_available_csvs.keys())[0]
     )
     _selected_label = st.sidebar.selectbox(
         "Questionnaire dataset",
@@ -685,10 +692,10 @@ elif step == "3. Route Pipes":
         min_value=0.0, max_value=5.0, value=2.0, step=0.5,
         help="Cost per direction change — higher values produce straighter routes.",
     )
-    w_tray = col_r3.slider(
-        "Tray preference",
+    w_parallel = col_r3.slider(
+        "Parallel preference",
         min_value=0.0, max_value=2.0, value=0.5, step=0.25,
-        help="Cost discount per step next to a routing tray.",
+        help="Cost discount per step next to an existing pipe. Higher values encourage bundling.",
     )
     w_suction = col_r4.slider(
         "Suction low-z preference",
@@ -716,7 +723,7 @@ elif step == "3. Route Pipes":
                 w_bend=w_bend,
                 w_vertical=1.5,
                 w_installability=w_installability,
-                w_tray=w_tray,
+                w_parallel=w_parallel,
                 w_suction=w_suction,
             )
             routed = astar.route_all(st.session_state.pipe_list)

@@ -38,8 +38,8 @@ class AStar:
     w_vertical        : float — penalty per vertical step
     w_installability  : float — penalty weight for poor installability
                         0.0 = pure shortest path, >0 = prefer accessible routes
-    w_tray            : float — cost discount per step inside a routing tray
-                        0.0 = no preference, >0 = prefer tray routes
+    w_parallel        : float — cost discount per step next to an existing pipe
+                        0.0 = no preference, >0 = prefer bundling pipes
     """
 
     def __init__(
@@ -55,7 +55,7 @@ class AStar:
         w_bend: float = 2.0,
         w_vertical: float = 1.5,
         w_installability: float = 0.0,
-        w_tray: float = 0.5,
+        w_parallel: float = 0.5,
         w_suction: float = 2.0,
     ):
         self.room             = room
@@ -69,19 +69,15 @@ class AStar:
         self.w_bend           = w_bend
         self.w_vertical       = w_vertical
         self.w_installability = w_installability
-        self.w_tray           = w_tray
-        self.w_suction        = w_suction  # penalty multiplier for suction pipes higher than necessary
+        self.w_parallel       = w_parallel
+        self.w_suction        = w_suction
 
         # Offset for the 0.5m space below the engine room (z_min = -0.5)
         self.z_min_world = -0.5
 
-        # Build static obstacle set (machinery + no-go zones + walking spaces)
+        # Build static obstacle set (machinery + no-go zones + walking spaces + trays)
         self.obstacles: Set[Tuple[int, int, int]] = set()
         self._mark_obstacles()
-
-        # Build preferred-cell set (routing trays → cost discount)
-        self.tray_cells: Set[Tuple[int, int, int]] = set()
-        self._mark_tray_cells()
 
         # Pre-compute clearance map if fuzzy penalty is active
         self.clearance_map: Optional[np.ndarray] = None
@@ -107,7 +103,7 @@ class AStar:
     # ------------------------------------------------------------------
 
     def _mark_obstacles(self):
-        """Fill obstacle set from machinery, no-go zones, and walking spaces."""
+        """Fill obstacle set from machinery, no-go zones, walking spaces, and routing trays."""
         for m in self.machinery_list:
             if m.position:
                 self._fill_box(
@@ -120,37 +116,11 @@ class AStar:
             self._fill_box(z.x_min, z.y_min, z.z_min,
                            z.x_max, z.y_max, z.z_max)
         for w in self.walking_spaces:
-            # Walking space blocks pipes from z=0 up to w.height (default 2.1 m)
-            # We use a slightly more conservative grid filling to ensure pipes 
-            # don't skim the very edge of the walkway.
             self._fill_box(w.x_min, w.y_min, 0.0,
                            w.x_max, w.y_max, w.height)
-
-    def _mark_tray_cells(self):
-        """
-        Routing trays are physical structures — pipes run ALONGSIDE them, not
-        through them.
-
-        Step 1: add every cell inside a tray to the obstacle set (hard block).
-        Step 2: collect the cells immediately adjacent to each tray (1-cell shell
-                around the bounding box) that are not themselves obstacles.
-                These go into self.tray_cells and receive a cost discount in A*.
-        """
-        # Step 1 — tray interiors become obstacles
         for t in self.routing_trays:
-            for gx in range(self._to_grid(t.x_min, "x"), self._to_grid(t.x_max, "x") + 1):
-                for gy in range(self._to_grid(t.y_min, "y"), self._to_grid(t.y_max, "y") + 1):
-                    for gz in range(self._to_grid(t.z_min, "z"), self._to_grid(t.z_max, "z") + 1):
-                        self.obstacles.add((gx, gy, gz))
-
-        # Step 2 — 1-cell shell around each tray → preferred (discount) cells
-        for t in self.routing_trays:
-            for gx in range(self._to_grid(t.x_min, "x") - 1, self._to_grid(t.x_max, "x") + 2):
-                for gy in range(self._to_grid(t.y_min, "y") - 1, self._to_grid(t.y_max, "y") + 2):
-                    for gz in range(self._to_grid(t.z_min, "z") - 1, self._to_grid(t.z_max, "z") + 2):
-                        cell = (gx, gy, gz)
-                        if cell not in self.obstacles:
-                            self.tray_cells.add(cell)
+            self._fill_box(t.x_min, t.y_min, t.z_min,
+                           t.x_max, t.y_max, t.z_max)
 
     def _fill_box(self, xmin, ymin, zmin, xmax, ymax, zmax):
         for x in range(self._to_grid(xmin, "x"), self._to_grid(xmax, "x") + 1):
@@ -276,12 +246,22 @@ class AStar:
 
         # Copy static obstacles, then add previously routed pipe paths
         current_obs = self.obstacles.copy()
+        parallel_friendly: Set[Tuple[int, int, int]] = set()
+        
         for p in already_routed:
             if p.path:
                 for pos in p.path:
-                    current_obs.add((self._to_grid(pos.x, "x"),
-                                     self._to_grid(pos.y, "y"),
-                                     self._to_grid(pos.z, "z")))
+                    pg = (self._to_grid(pos.x, "x"),
+                          self._to_grid(pos.y, "y"),
+                          self._to_grid(pos.z, "z"))
+                    current_obs.add(pg)
+                    # Mark neighbors as bundling-friendly
+                    for dx in [-1, 0, 1]:
+                        for dy in [-1, 0, 1]:
+                            for dz in [-1, 0, 1]:
+                                if dx == 0 and dy == 0 and dz == 0: continue
+                                nb_bundle = (pg[0]+dx, pg[1]+dy, pg[2]+dz)
+                                parallel_friendly.add(nb_bundle)
 
         # Check if start or end are strictly blocked (but allow if they are on the very edge)
         # We handle this by removing start/goal from current_obs for THIS pipe's search.
@@ -351,9 +331,9 @@ class AStar:
                 # Fuzzy installability penalty
                 move_cost += self._installability_cost(nb, pipe_radius_mm)
 
-                # Routing tray discount
-                if nb in self.tray_cells:
-                    move_cost = max(0.0, move_cost - self.w_tray)
+                # Parallel bundling discount (makes cells next to other pipes cheaper)
+                if nb in parallel_friendly:
+                    move_cost = max(0.1, move_cost - self.w_parallel)
 
                 new_g = g + move_cost
                 if new_g < visited.get(nb, math.inf):
