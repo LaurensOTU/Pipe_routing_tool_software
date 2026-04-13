@@ -260,6 +260,23 @@ elif step == "2. Place Machinery":
         submitted = st.form_submit_button(btn_label)
 
     if submitted:
+        # --- CONSTRAINT ENFORCEMENT ---
+        if m_constraint == "floor":
+            if m_z != 0.0:
+                st.info(f"💡 'floor' constraint: Snapping '{m_name}' from Z={m_z} to Z=0.0")
+                m_z = 0.0
+        elif m_constraint == "wall":
+            # Check if touching any of the 4 vertical walls (within 1cm)
+            is_against_wall = (
+                m_x <= 0.01 or 
+                (m_x + m_l) >= (room.length - 0.01) or 
+                m_y <= 0.01 or 
+                (m_y + m_w) >= (room.width - 0.01)
+            )
+            if not is_against_wall:
+                st.error(f"❌ '{m_name}' has a 'wall' constraint but is not against any vertical wall. Please adjust X or Y to touch a boundary.")
+                st.stop()
+
         new_machine = Machinery(
             id=m_curr.id if is_editing else f"m_{len(st.session_state.machinery_list)}",
             name=m_name,
