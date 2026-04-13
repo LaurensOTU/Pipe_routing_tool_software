@@ -166,16 +166,25 @@ elif step == "2. Place Machinery":
     # -----------------------------------------------------------------------
     # Interactive placement (Click on grid)
     # -----------------------------------------------------------------------
-    st.subheader("Interactive Placement")
-    st.info("💡 Click a cyan dot on the grid to set the X/Y/Z position for the machine below.")
+    st.subheader("Interactive Area Selection")
+    st.info("💡 Use the grid below to capture an X/Y area. This selection will pre-fill the forms for Machinery, Walkways, or Trays.")
     
     col_z, col_res = st.columns([2, 2])
-    # Use existing session state for Z or a local one
+    
+    # We'll use a single grid for everything in Step 2 for consistency, 
+    # but we'll allow the user to toggle "Floor Mode" for walkways.
+    grid_mode = st.radio("Selection target:", ["Machinery / Trays", "Walkways (Floor level)"], horizontal=True)
+
     if "mach_snap_z" not in st.session_state:
         st.session_state.mach_snap_z = 0.0
     
-    mach_z = col_z.slider("Snap plane Z", -0.5, float(room.height), st.session_state.mach_snap_z, 0.5)
-    st.session_state.mach_snap_z = mach_z
+    if grid_mode == "Machinery / Trays":
+        mach_z = col_z.slider("Snap plane Z (Height)", -0.5, float(room.height), st.session_state.mach_snap_z, 0.5)
+        st.session_state.mach_snap_z = mach_z
+    else:
+        mach_z = 0.0
+        col_z.markdown("<br>📍 **Fixed to Floor (Z=0.0)**", unsafe_allow_html=True)
+    
     mach_res = col_res.select_slider("Grid resolution", [1.0, 0.5, 0.25], 0.5)
 
     fig_mach_snap = create_snap_figure(
