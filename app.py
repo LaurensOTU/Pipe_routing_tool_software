@@ -15,6 +15,7 @@ from visualization import create_room_figure, create_snap_figure
 from algorithms import AStar
 from fuzzy_installability import FuzzyInstallability
 from export_utils import export_to_obj
+from persistence_utils import serialize_state, deserialize_state
 
 # ---------------------------------------------------------------------------
 # Page config
@@ -110,6 +111,54 @@ for key, default in [
 ]:
     if key not in st.session_state:
         st.session_state[key] = default
+
+# ---------------------------------------------------------------------------
+# Project Storage (Save/Load)
+# ---------------------------------------------------------------------------
+with st.sidebar.expander("💾 Project Storage", expanded=False):
+    st.markdown("### Save Project")
+    # Prepare JSON state
+    current_json = serialize_state(
+        st.session_state.room,
+        st.session_state.machinery_list,
+        st.session_state.pipe_list,
+        st.session_state.no_go_zones,
+        st.session_state.walking_space_list,
+        st.session_state.routing_tray_list
+    )
+    
+    st.download_button(
+        label="💾 Save Project As...",
+        data=current_json,
+        file_name="pipe_project.json",
+        mime="application/json",
+        help="Download the entire project state (Room, Machinery, Pipes, etc.) as a JSON file."
+    )
+    
+    st.markdown("---")
+    st.markdown("### Load Project")
+    uploaded_file = st.file_uploader("Upload project .json", type=["json"])
+    
+    if uploaded_file:
+        if st.button("Restore Project Data"):
+            try:
+                content = uploaded_file.read().decode("utf-8")
+                r, m, p, z, w, t = deserialize_state(content)
+                
+                # Update session state
+                st.session_state.room = r
+                st.session_state.machinery_list = m
+                st.session_state.pipe_list = p
+                st.session_state.no_go_zones = z
+                st.session_state.walking_space_list = w
+                st.session_state.routing_tray_list = t
+                
+                st.success("Project restored successfully!")
+                st.rerun()
+            except Exception as e:
+                st.error(f"Error loading project: {e}")
+
+st.sidebar.divider()
 
 # ---------------------------------------------------------------------------
 # Sidebar navigation
