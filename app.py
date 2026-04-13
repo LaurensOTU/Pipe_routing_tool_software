@@ -463,7 +463,7 @@ elif step == "3. Route Pipes":
         if _k not in st.session_state:
             st.session_state[_k] = _v
 
-    with st.expander("🖱️  Click to place pipe endpoints in the 3D view", expanded=True):
+    with st.expander("🖱️  Click directly on a grid point to place pipe endpoints", expanded=True):
         col_mode, col_z, col_res = st.columns([2, 2, 2])
 
         snap_mode = col_mode.radio(
@@ -493,8 +493,9 @@ elif step == "3. Route Pipes":
         snap_start_pos = Position(_ss[0], _ss[1], _ss[2]) if _ss else None
         snap_end_pos   = Position(_se[0], _se[1], _se[2]) if _se else None
 
-        # 2-D top-down snap grid (on_select works reliably in 2-D; 3-D clicks
-        # only fire plotly_click, not plotly_selected that Streamlit listens to)
+        # 2-D top-down snap grid. Using dragmode='pan' makes clicking a single 
+        # point more natural (no box required) while clickmode='event+select'
+        # ensures on_select still fires.
         fig_snap = create_snap_figure(
             room,
             st.session_state.machinery_list,
@@ -504,6 +505,7 @@ elif step == "3. Route Pipes":
             snap_end=snap_end_pos,
             walking_spaces=st.session_state.walking_space_list,
             routing_trays=st.session_state.routing_tray_list,
+            dragmode="pan",
         )
 
         st.caption(

@@ -25,16 +25,17 @@ def create_snap_figure(
     snap_end: Optional[Position] = None,
     walking_spaces: List[WalkingSpace] = [],
     routing_trays: List[RoutingTray] = [],
+    dragmode: str = "select",
 ):
     """
     2-D top-down (XY) floor-plan for click-to-place pipe endpoints.
 
-    Uses a 2-D Scatter trace with dragmode='select' so that a single click
-    on any cyan grid dot fires Streamlit's on_select event.  The z-coordinate
-    comes from snap_grid_z (controlled by the height slider in the UI).
+    Uses a 2-D Scatter trace with Streamlit's on_select event.
     """
     fig = go.Figure()
     L, W = room.length, room.width
+
+    # ... (rest of the code same until update_layout)
 
     # Machinery footprints (top-down rectangles)
     machine_colours = {
@@ -146,10 +147,8 @@ def create_snap_figure(
             scaleanchor="y", scaleratio=1,
         ),
         yaxis=dict(range=[-0.3, W + 0.3], title="Y — Width (m)"),
-        # dragmode='select' + clickmode='event+select' together make a single
-        # point click fire Plotly's plotly_selected event, which is what
-        # Streamlit's on_select listens to.
-        dragmode="select",
+        # 'clickmode' + 'on_select' (Streamlit) works for single clicks on markers
+        dragmode=dragmode,
         clickmode="event+select",
         height=320,
         margin=dict(r=0, l=0, b=30, t=0),
