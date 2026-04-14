@@ -243,18 +243,41 @@ class AStar:
         
         for p in already_routed:
             if p.path:
+                # Minimum separation distance between centerlines in metres
+                safety_dist_m = (pipe.diameter + p.diameter) / 2.0
+                # safety_dist_g = how many grid cells that is
+                safety_dist_g = safety_dist_m / self.grid_resolution
+                
+                # Pre-calculate a small spherical mask of relative offsets to block
+                # this is much faster than running math.sqrt inside the path loop
+                r_int = int(math.ceil(safety_dist_g))
+                offsets = []
+                for dx in range(-r_int, r_int + 1):
+                    for dy in range(-r_int, r_int + 1):
+                        for dz in range(-r_int, r_int + 1):
+                            dist_sq = dx*dx + dy*dy + dz*dz
+                            # use a slightly smaller factor (0.95) to allow touching
+                            if math.sqrt(dist_sq) < (safety_dist_g * 0.95):
+                                offsets.append((dx, dy, dz))
+
                 for pos in p.path:
                     pg = (self._to_grid(pos.x, "x"),
                           self._to_grid(pos.y, "y"),
                           self._to_grid(pos.z, "z"))
-                    current_obs.add(pg)
-                    # Mark neighbors as bundling-friendly
+                    
+                    # Block the centerline and its physical volume
+                    for dx, dy, dz in offsets:
+                        current_obs.add((pg[0]+dx, pg[1]+dy, pg[2]+dz))
+
+                    # Mark neighbors as bundling-friendly (discount if next to it)
+                    # We only mark the IMMEDIATE outer layer for bundling
                     for dx in [-1, 0, 1]:
                         for dy in [-1, 0, 1]:
                             for dz in [-1, 0, 1]:
                                 if dx == 0 and dy == 0 and dz == 0: continue
                                 nb_bundle = (pg[0]+dx, pg[1]+dy, pg[2]+dz)
-                                parallel_friendly.add(nb_bundle)
+                                if nb_bundle not in current_obs:
+                                    parallel_friendly.add(nb_bundle)
 
         # Check if start or end are strictly blocked (but allow if they are on the very edge)
         # We handle this by removing start/goal from current_obs for THIS pipe's search.
