@@ -156,16 +156,9 @@ class AStar:
                     dist[ox, oy, oz] = 0.0
                     queue.append((ox, oy, oz))
 
-        # Also seed boundary walls (treat room edge as distance 0)
-        for gx in range(gx_max):
-            for gy in range(gy_max):
-                for gz in range(gz_max):
-                    is_wall = (gx == 0 or gx == gx_max - 1 or
-                               gy == 0 or gy == gy_max - 1 or
-                               gz == 0 or gz == gz_max - 1)
-                    if is_wall and dist[gx, gy, gz] == np.inf:
-                        dist[gx, gy, gz] = 0.0
-                        queue.append((gx, gy, gz))
+        # Boundary walls are NOT treated as obstacles anymore, because pipes
+        # can be mounted directly on them without penalty.
+        # Only machinery and user-defined zones create clearance issues.
 
         # BFS wavefront propagation (uses Chebyshev distance for speed)
         # For true Euclidean we do a simple BFS with 26-connectivity
