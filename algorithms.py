@@ -19,6 +19,19 @@ import math
 import heapq
 import numpy as np
 
+# ---------------------------------------------------------------------------
+# Pipe content type sets — used for class rule enforcement
+# ---------------------------------------------------------------------------
+# All content types that carry liquid (switchboard exclusion applies)
+LIQUID_CONTENTS: frozenset = frozenset([
+    "General Fluid", "Fuel / Flammable Oil", "HP Fuel (Injection)",
+    "Lubricating Oil", "Seawater / Ballast", "Bilge", "Freshwater / Cooling",
+])
+# Flammable liquid types (hot surface 500 mm buffer applies)
+FLAMMABLE_CONTENTS: frozenset = frozenset([
+    "Fuel / Flammable Oil", "HP Fuel (Injection)", "Lubricating Oil",
+])
+
 
 class AStar:
     """
@@ -214,6 +227,101 @@ class AStar:
         return self.w_installability * (1.0 - inst_score)
 
     # ------------------------------------------------------------------
+    # Class rule enforcement — per-pipe obstacle additions
+    # ------------------------------------------------------------------
+
+    def _apply_class_rules(
+        self, pipe: Pipe, already_routed: List[Pipe]
+    ) -> Set[Tuple[int, int, int]]:
+        """
+        Return extra obstacle cells that apply only to this pipe, based on
+        classification society routing rules.  These are merged into the
+        per-search copy of the obstacle set so the global set is unchanged.
+
+        Rules enforced
+        --------------
+        1. Switchboard exclusion — all liquid-carrying pipes
+           (LR Pt 5, Ch 13, 5.5 — extends beyond fuel only)
+        2. Hot surface 500 mm buffer — flammable fluid pipes only
+           (BV Pt C, Ch 1, Sec 10 [11])
+        3. Bilge / seawater full separation
+           (BV Pt C, Ch 1, Sec 10 [6])
+        """
+        extra: Set[Tuple[int, int, int]] = set()
+        content = getattr(pipe, "pipe_content", "General Fluid")
+
+        max_gx = self._to_grid(self.room.length, "x")
+        max_gy = self._to_grid(self.room.width,  "y")
+        max_gz = self._to_grid(self.room.height,  "z")
+
+        # ------------------------------------------------------------------
+        # Rule 1 — Switchboard: block entire column above switchboard for ALL
+        #           liquid-carrying pipes (not only fuel)
+        # ------------------------------------------------------------------
+        if content in LIQUID_CONTENTS:
+            for m in self.machinery_list:
+                if m.machine_type == "Switchboard" and m.position:
+                    sx0 = self._to_grid(m.position.x,            "x")
+                    sx1 = self._to_grid(m.position.x + m.length, "x")
+                    sy0 = self._to_grid(m.position.y,            "y")
+                    sy1 = self._to_grid(m.position.y + m.width,  "y")
+                    gz_top = self._to_grid(m.position.z + m.height, "z")
+                    for gx in range(sx0, sx1 + 1):
+                        for gy in range(sy0, sy1 + 1):
+                            for gz in range(gz_top, max_gz + 1):
+                                if 0 <= gx <= max_gx and 0 <= gy <= max_gy:
+                                    extra.add((gx, gy, gz))
+
+        # ------------------------------------------------------------------
+        # Rule 2 — Hot surface: 500 mm exclusion buffer around any machinery
+        #           tagged "Hot Surface", for flammable fluid pipes only
+        # ------------------------------------------------------------------
+        if content in FLAMMABLE_CONTENTS:
+            buf = int(math.ceil(0.5 / self.grid_resolution))  # 500 mm → grid cells
+            for m in self.machinery_list:
+                if m.machine_type == "Hot Surface" and m.position:
+                    mx0 = self._to_grid(m.position.x,            "x") - buf
+                    mx1 = self._to_grid(m.position.x + m.length, "x") + buf
+                    my0 = self._to_grid(m.position.y,            "y") - buf
+                    my1 = self._to_grid(m.position.y + m.width,  "y") + buf
+                    mz0 = self._to_grid(m.position.z,            "z") - buf
+                    mz1 = self._to_grid(m.position.z + m.height, "z") + buf
+                    for gx in range(mx0, mx1 + 1):
+                        for gy in range(my0, my1 + 1):
+                            for gz in range(mz0, mz1 + 1):
+                                if 0 <= gx <= max_gx and 0 <= gy <= max_gy and 0 <= gz <= max_gz:
+                                    extra.add((gx, gy, gz))
+
+        # ------------------------------------------------------------------
+        # Rule 3 — Bilge / seawater full separation: treat conflicting system
+        #           paths as hard obstacles (wider margin than normal pipes)
+        # ------------------------------------------------------------------
+        if content == "Bilge":
+            conflict_types: Set[str] = {"Seawater / Ballast"}
+        elif content == "Seawater / Ballast":
+            conflict_types = {"Bilge"}
+        else:
+            conflict_types = set()
+
+        if conflict_types:
+            sep = max(3, int(math.ceil(0.3 / self.grid_resolution)))  # 300 mm minimum gap
+            for p in already_routed:
+                p_content = getattr(p, "pipe_content", "General Fluid")
+                if p_content in conflict_types and p.path:
+                    for pos in p.path:
+                        pg = (
+                            self._to_grid(pos.x, "x"),
+                            self._to_grid(pos.y, "y"),
+                            self._to_grid(pos.z, "z"),
+                        )
+                        for dx in range(-sep, sep + 1):
+                            for dy in range(-sep, sep + 1):
+                                for dz in range(-sep, sep + 1):
+                                    extra.add((pg[0]+dx, pg[1]+dy, pg[2]+dz))
+
+        return extra
+
+    # ------------------------------------------------------------------
     # A* core
     # ------------------------------------------------------------------
 
@@ -278,6 +386,9 @@ class AStar:
                                 nb_bundle = (pg[0]+dx, pg[1]+dy, pg[2]+dz)
                                 if nb_bundle not in current_obs:
                                     parallel_friendly.add(nb_bundle)
+
+        # --- Class rule obstacles (pipe-content-specific, per-pass only) ---
+        current_obs |= self._apply_class_rules(pipe, already_routed)
 
         # Check if start or end are strictly blocked (but allow if they are on the very edge)
         # We handle this by removing start/goal from current_obs for THIS pipe's search.
@@ -403,6 +514,118 @@ class AStar:
                     pipe.avg_time_multiplier = round(
                         sum(multipliers) / len(multipliers), 3)
 
+            # Post-routing class rule flags
+            pipe.class_flags = self.check_class_flags(pipe)
+
             routed.append(pipe)
 
         return routed
+
+    # ------------------------------------------------------------------
+    # Post-routing class compliance checks
+    # ------------------------------------------------------------------
+
+    def check_class_flags(self, pipe: Pipe) -> List[str]:
+        """
+        Run post-routing class compliance checks on a single routed pipe.
+        Returns a list of human-readable warning strings; empty = compliant.
+
+        Checks
+        ------
+        5. Expansion loop (LR Pt 5, Ch 12, 3.2)     — straight run > 20 m
+        6. Support span  (DNV Pt 4, Ch 6, Sec 10)    — span exceeds DN-based max
+        8. HP Fuel annotation (SOLAS II-2, Reg 4)    — double-wall required
+           Hot surface proximity (BV Pt C, Ch 1, Sec 10) — sanity verify
+        """
+        flags: List[str] = []
+        if not pipe.path or len(pipe.path) < 2:
+            return flags
+
+        content = getattr(pipe, "pipe_content", "General Fluid")
+
+        # ----------------------------------------------------------------
+        # Measure the longest uninterrupted straight segment in the path
+        # ----------------------------------------------------------------
+        max_straight = 0.0
+        seg_len       = 0.0
+        prev_dir: Optional[Tuple[float, float, float]] = None
+
+        for i in range(1, len(pipe.path)):
+            dx = pipe.path[i].x - pipe.path[i - 1].x
+            dy = pipe.path[i].y - pipe.path[i - 1].y
+            dz = pipe.path[i].z - pipe.path[i - 1].z
+            step = math.sqrt(dx*dx + dy*dy + dz*dz)
+            if step < 1e-9:
+                continue
+            cur_dir = (round(dx/step, 2), round(dy/step, 2), round(dz/step, 2))
+            if cur_dir == prev_dir:
+                seg_len += step
+            else:
+                max_straight = max(max_straight, seg_len)
+                seg_len  = step
+                prev_dir = cur_dir
+        max_straight = max(max_straight, seg_len)
+
+        # ----------------------------------------------------------------
+        # Flag 5 — Expansion loop required for runs > 20 m
+        # ----------------------------------------------------------------
+        if max_straight > 20.0:
+            flags.append(
+                f"⚠️ Expansion: longest straight run {max_straight:.1f} m > 20 m — "
+                f"Ω-loop or bellows required (LR Pt 5, Ch 12, 3.2)"
+            )
+
+        # ----------------------------------------------------------------
+        # Flag 6 — Pipe support span check (DN-based maximum)
+        # ----------------------------------------------------------------
+        dn_mm = pipe.diameter * 1000.0
+        if   dn_mm <= 50:  max_span = 3.0
+        elif dn_mm <= 100: max_span = 4.0
+        elif dn_mm <= 150: max_span = 5.0
+        else:              max_span = 6.0
+
+        if max_straight > max_span:
+            flags.append(
+                f"⚠️ Support: run of {max_straight:.1f} m exceeds max span "
+                f"{max_span:.1f} m for ⌀{dn_mm:.0f} mm — supports required "
+                f"(DNV Pt 4, Ch 6, Sec 10)"
+            )
+
+        # ----------------------------------------------------------------
+        # Flag 8 — HP Fuel double-wall annotation
+        # ----------------------------------------------------------------
+        if content == "HP Fuel (Injection)":
+            flags.append(
+                "📋 Spec: Double-walled (jacketed) pipe with AMS-connected leak "
+                "detection alarm required (SOLAS II-2, Reg 4)"
+            )
+
+        # ----------------------------------------------------------------
+        # Sanity check — flammable pipe proximity to hot surface
+        # (should not occur if _apply_class_rules was active, but flags
+        #  start/end endpoints that may bypass the exclusion zone)
+        # ----------------------------------------------------------------
+        if content in FLAMMABLE_CONTENTS:
+            flagged_machines: Set[str] = set()
+            for m in self.machinery_list:
+                if m.machine_type == "Hot Surface" and m.position and m.id not in flagged_machines:
+                    cx = m.position.x + m.length / 2.0
+                    cy = m.position.y + m.width  / 2.0
+                    cz = m.position.z + m.height / 2.0
+                    half_diag = math.sqrt(
+                        (m.length / 2)**2 + (m.width / 2)**2 + (m.height / 2)**2
+                    )
+                    for pos in pipe.path:
+                        d = math.sqrt(
+                            (pos.x - cx)**2 + (pos.y - cy)**2 + (pos.z - cz)**2
+                        ) - half_diag
+                        if d < 0.5:
+                            flags.append(
+                                f"🔴 Violation: flammable pipe within 500 mm of "
+                                f"'{m.name}' — steel shielding required "
+                                f"(BV Pt C, Ch 1, Sec 10 [11])"
+                            )
+                            flagged_machines.add(m.id)
+                            break
+
+        return flags

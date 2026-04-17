@@ -626,17 +626,31 @@ elif step == "3. Route Pipes":
     p_edit_idx = st.session_state.pipe_edit_idx
     is_p_editing = p_edit_idx is not None and p_edit_idx < len(st.session_state.pipe_list)
 
+    # Pipe content options (determines class rule enforcement in the router)
+    _CONTENT_OPTIONS = [
+        "General Fluid",
+        "Fuel / Flammable Oil",
+        "HP Fuel (Injection)",
+        "Lubricating Oil",
+        "Seawater / Ballast",
+        "Bilge",
+        "Freshwater / Cooling",
+        "Gas / Compressed Air",
+        "Exhaust / Steam",
+    ]
+
     if is_p_editing:
         st.subheader(f"Editing Pipe: {st.session_state.pipe_list[p_edit_idx].name}")
         p_curr = st.session_state.pipe_list[p_edit_idx]
-        default_p_name = p_curr.name
-        default_p_diam = p_curr.diameter
-        default_p_prio = p_curr.priority
-        default_p_type = p_curr.pipe_type
+        default_p_name    = p_curr.name
+        default_p_diam    = p_curr.diameter
+        default_p_prio    = p_curr.priority
+        default_p_type    = p_curr.pipe_type
         default_p_suction = p_curr.suction_type
+        default_p_content = getattr(p_curr, "pipe_content", "General Fluid")
         default_sx, default_sy, default_sz = p_curr.start.x, p_curr.start.y, p_curr.start.z
         default_ex, default_ey, default_ez = p_curr.end.x, p_curr.end.y, p_curr.end.z
-        
+
         # Override with clicks if snap was active
         if snap_event and snap_event.selection.points:
              # Logic for which point was clicked (start or end) is handled by snap_mode
@@ -644,15 +658,16 @@ elif step == "3. Route Pipes":
         # Pre-fill from session state anyway (snap clicks update these)
         default_sx, default_sy, default_sz = float(st.session_state.pipe_sx), float(st.session_state.pipe_sy), float(st.session_state.pipe_sz)
         default_ex, default_ey, default_ez = float(st.session_state.pipe_ex), float(st.session_state.pipe_ey), float(st.session_state.pipe_ez)
-        
+
         btn_p_label = "Update Pipe"
     else:
         st.subheader("Add a New Pipe")
-        default_p_name = "Main Line"
-        default_p_diam = 0.2
-        default_p_prio = 1
-        default_p_type = "Closed"
+        default_p_name    = "Main Line"
+        default_p_diam    = 0.2
+        default_p_prio    = 1
+        default_p_type    = "Closed"
         default_p_suction = "Pressurised"
+        default_p_content = "General Fluid"
         default_sx, default_sy, default_sz = float(st.session_state.pipe_sx), float(st.session_state.pipe_sy), float(st.session_state.pipe_sz)
         default_ex, default_ey, default_ez = float(st.session_state.pipe_ex), float(st.session_state.pipe_ey), float(st.session_state.pipe_ez)
         btn_p_label = "Add Pipe"
@@ -663,16 +678,31 @@ elif step == "3. Route Pipes":
         p_diam = c_a.number_input("Diameter (m)", min_value=0.05, max_value=1.0, value=default_p_diam, step=0.05)
         p_prio = c_b.number_input("Priority (1 = highest)", min_value=1, max_value=20, value=default_p_prio, step=1)
         
-        col_t1, col_t2 = st.columns(2)
+        col_t1, col_t2, col_t3 = st.columns(3)
         p_type_idx = ["Closed", "Open"].index(default_p_type)
         p_type = col_t1.selectbox("Pipe Type", ["Closed", "Open"], index=p_type_idx)
-        
+
         suction_options = ["Pressurised", "Suction"]
         default_suction_idx = suction_options.index(default_p_suction) if default_p_suction in suction_options else 0
         if p_type == "Closed":
-            p_suction = col_t2.selectbox("Pressurised/Suction", suction_options, index=default_suction_idx)
+            p_suction = col_t2.selectbox("Pressurised / Suction", suction_options, index=default_suction_idx)
         else:
             p_suction = "Pressurised"
+            col_t2.selectbox("Pressurised / Suction", suction_options, index=0, disabled=True)
+
+        default_content_idx = _CONTENT_OPTIONS.index(default_p_content) if default_p_content in _CONTENT_OPTIONS else 0
+        p_content = col_t3.selectbox(
+            "Pipe Content",
+            _CONTENT_OPTIONS,
+            index=default_content_idx,
+            help=(
+                "Determines class rule enforcement:\n"
+                "• All liquids → excluded above switchboards (LR Pt 5, Ch 13)\n"
+                "• Flammable liquids → 500 mm buffer around hot surfaces (BV Pt C, Ch 1, Sec 10)\n"
+                "• Bilge / Seawater → fully separated from each other (BV Pt C, Ch 1, Sec 10 [6])\n"
+                "• HP Fuel → double-wall specification flag (SOLAS II-2, Reg 4)"
+            ),
+        )
 
         st.markdown("**Start point (m)**  — or snap-select above 🟢")
         s1, s2, s3 = st.columns(3)
@@ -698,6 +728,7 @@ elif step == "3. Route Pipes":
             priority=p_prio,
             pipe_type=p_type,
             suction_type=p_suction,
+            pipe_content=p_content,
         )
         if is_p_editing:
             st.session_state.pipe_list[p_edit_idx] = new_pipe
@@ -738,15 +769,18 @@ elif step == "3. Route Pipes":
             else:
                 reason = f" — {p.routing_status}" if p.routing_status else " — not yet routed"
                 route_info = reason
-            p_info = f"{p.pipe_type}"
+            p_type_str = f"{p.pipe_type}"
             if p.pipe_type == "Closed":
-                p_info += f" ({p.suction_type})"
-            
+                p_type_str += f" ({p.suction_type})"
+            p_content_str = getattr(p, "pipe_content", "General Fluid")
+            flag_indicator = f"  ⚠️ {len(p.class_flags)} flag(s)" if getattr(p, "class_flags", []) else ""
+
             with col_pipe_info:
                 st.text(
-                    f"{p.name}  |  ⌀{p.diameter * 1000:.0f} mm  |  {p_info}  |  prio {p.priority}  |  "
+                    f"{p.name}  |  ⌀{p.diameter * 1000:.0f} mm  |  {p_type_str}  |  "
+                    f"{p_content_str}  |  prio {p.priority}  |  "
                     f"({p.start.x}, {p.start.y}, {p.start.z}) → "
-                    f"({p.end.x}, {p.end.y}, {p.end.z}){route_info}"
+                    f"({p.end.x}, {p.end.y}, {p.end.z}){route_info}{flag_indicator}"
                 )
             
             with col_pipe_edit:
@@ -892,4 +926,19 @@ elif step == "3. Route Pipes":
                 })
         if rows:
             st.dataframe(_pd.DataFrame(rows), use_container_width=True)
-       
+
+        # -----------------------------------------------------------------------
+        # Class rule flags table
+        # -----------------------------------------------------------------------
+        st.subheader("Class Rule Compliance")
+        flag_rows = []
+        for p in st.session_state.pipe_list:
+            if p.path:
+                for flag in getattr(p, "class_flags", []):
+                    flag_rows.append({"Pipe": p.name, "Content": getattr(p, "pipe_content", "—"), "Flag": flag})
+
+        if flag_rows:
+            st.warning(f"{len(flag_rows)} flag(s) require attention:")
+            st.dataframe(_pd.DataFrame(flag_rows), use_container_width=True)
+        else:
+            st.success("✅ No class rule violations detected for all routed pipes.")

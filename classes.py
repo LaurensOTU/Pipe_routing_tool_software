@@ -80,7 +80,11 @@ class Pipe:
     suction_type: Optional[Literal["Pressurised", "Suction"]] = "Pressurised"
     path: Optional[List[Position]] = field(default=None)
 
+    # Pipe content type — drives class rule enforcement in the router
+    pipe_content: str = "General Fluid"
     # Populated by AStar.route_all() after routing
     avg_installability_score: float = 1.0   # 0.0 (impossible) → 1.0 (clear)
     avg_time_multiplier: float = 1.0         # 1.0 = baseline installation time
     routing_status: Optional[str] = None    # "Success", "Start/End blocked", "No path", etc.
+    # Post-routing class rule flags (human-readable warning strings)
+    class_flags: List[str] = field(default_factory=list)
