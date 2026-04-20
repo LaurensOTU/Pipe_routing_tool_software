@@ -108,6 +108,7 @@ for key, default in [
     ("pipe_list",         []),
     ("machinery_edit_idx", None),
     ("pipe_edit_idx",      None),
+    ("project_path",      ""),
 ]:
     if key not in st.session_state:
         st.session_state[key] = default
@@ -127,12 +128,32 @@ with st.sidebar.expander("💾 Project Storage", expanded=False):
         st.session_state.routing_tray_list
     )
     
+    # Simple Save (Overwrite)
+    save_col1, save_col2 = st.columns([3, 1])
+    current_path = st.text_input("Project File Path", value=st.session_state.project_path, placeholder="e.g. data/project.json")
+    
+    if st.button("💾 Save", use_container_width=True, help="Save to the path specified above (overwrites existing file)."):
+        if current_path:
+            try:
+                # Ensure the directory exists
+                os.makedirs(os.path.dirname(os.path.abspath(current_path)), exist_ok=True)
+                with open(current_path, "w", encoding="utf-8") as f:
+                    f.write(current_json)
+                st.session_state.project_path = current_path
+                st.success(f"Project saved to {current_path}")
+            except Exception as e:
+                st.error(f"Error saving project: {e}")
+        else:
+            st.warning("Please specify a file path to save.")
+
+    st.markdown("---")
+
     st.download_button(
-        label="💾 Save Project As...",
+        label="📥 Save Project As... (Download)",
         data=current_json,
-        file_name="pipe_project.json",
+        file_name=os.path.basename(current_path) if current_path else "pipe_project.json",
         mime="application/json",
-        help="Download the entire project state (Room, Machinery, Pipes, etc.) as a JSON file."
+        help="Download the entire project state as a JSON file via your browser."
     )
     
     st.markdown("---")
@@ -152,8 +173,9 @@ with st.sidebar.expander("💾 Project Storage", expanded=False):
                 st.session_state.no_go_zones = z
                 st.session_state.walking_space_list = w
                 st.session_state.routing_tray_list = t
+                st.session_state.project_path = uploaded_file.name
                 
-                st.success("Project restored successfully!")
+                st.success(f"Project restored from {uploaded_file.name}!")
                 st.rerun()
             except Exception as e:
                 st.error(f"Error loading project: {e}")
