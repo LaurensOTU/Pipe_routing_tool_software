@@ -1,0 +1,324 @@
+{
+  "room": {
+    "length": 12.0,
+    "width": 15.4,
+    "height": 3.65
+  },
+  "machinery_list": [
+    {
+      "id": "m_0",
+      "name": "Main Engine PS1",
+      "length": 3.25,
+      "width": 1.5,
+      "height": 0.9999999999999997,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 1.5,
+        "y": 1.75,
+        "z": 0.0
+      },
+      "is_locked": false
+    },
+    {
+      "id": "m_1",
+      "name": "Main Engine SB",
+      "length": 3.25,
+      "width": 1.0,
+      "height": 0.9999999999999997,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 1.5,
+        "y": 11.75,
+        "z": 0.0
+      },
+      "is_locked": false
+    },
+    {
+      "id": "m_2",
+      "name": "SB",
+      "length": 0.5,
+      "width": 6.0,
+      "height": 1.5,
+      "machine_type": "Switchboard",
+      "constraint": "wall",
+      "position": {
+        "x": 0.0,
+        "y": 4.0,
+        "z": 0.0
+      },
+      "is_locked": false
+    },
+    {
+      "id": "m_3",
+      "name": "Oil Filtration system",
+      "length": 0.5,
+      "width": 2.5,
+      "height": 1.5,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 9.0,
+        "y": 6.5,
+        "z": 0.0
+      },
+      "is_locked": false
+    }
+  ],
+  "pipe_list": [
+    {
+      "id": "p_0",
+      "name": "Gas outlet PS",
+      "start": {
+        "x": 4.5,
+        "y": 4.5,
+        "z": 0.0
+      },
+      "end": {
+        "x": 8.0,
+        "y": 2.5,
+        "z": 3.5
+      },
+      "diameter": 0.2,
+      "priority": 1,
+      "pipe_type": "Closed",
+      "suction_type": "Pressurised",
+      "path": null,
+      "pipe_content": "Gas / Compressed Air",
+      "avg_installability_score": 1.0,
+      "avg_time_multiplier": 1.0,
+      "routing_status": null,
+      "class_flags": []
+    },
+    {
+      "id": "p_1",
+      "name": "Gas outlet SB",
+      "start": {
+        "x": 4.5,
+        "y": 11.0,
+        "z": 0.0
+      },
+      "end": {
+        "x": 8.0,
+        "y": 12.5,
+        "z": 3.5
+      },
+      "diameter": 0.2,
+      "priority": 1,
+      "pipe_type": "Closed",
+      "suction_type": "Pressurised",
+      "path": null,
+      "pipe_content": "Gas / Compressed Air",
+      "avg_installability_score": 1.0,
+      "avg_time_multiplier": 1.0,
+      "routing_status": null,
+      "class_flags": []
+    },
+    {
+      "id": "p_3",
+      "name": "Exhaust PS",
+      "start": {
+        "x": 4.5,
+        "y": 2.5,
+        "z": 1.0
+      },
+      "end": {
+        "x": 6.5,
+        "y": 2.5,
+        "z": 3.65
+      },
+      "diameter": 0.4,
+      "priority": 1,
+      "pipe_type": "Closed",
+      "suction_type": "Pressurised",
+      "path": null,
+      "pipe_content": "Exhaust / Steam",
+      "avg_installability_score": 1.0,
+      "avg_time_multiplier": 1.0,
+      "routing_status": null,
+      "class_flags": []
+    },
+    {
+      "id": "p_4",
+      "name": "Fuel PS",
+      "start": {
+        "x": 12.0,
+        "y": 3.5,
+        "z": -0.5
+      },
+      "end": {
+        "x": 5.0,
+        "y": 2.5,
+        "z": 0.5
+      },
+      "diameter": 0.2,
+      "priority": 1,
+      "pipe_type": "Closed",
+      "suction_type": "Pressurised",
+      "path": null,
+      "pipe_content": "HP Fuel (Injection)",
+      "avg_installability_score": 1.0,
+      "avg_time_multiplier": 1.0,
+      "routing_status": null,
+      "class_flags": []
+    },
+    {
+      "id": "p_5",
+      "name": "Fuel SB",
+      "start": {
+        "x": 12.0,
+        "y": 11.0,
+        "z": -0.5
+      },
+      "end": {
+        "x": 5.0,
+        "y": 12.0,
+        "z": 0.5
+      },
+      "diameter": 0.2,
+      "priority": 1,
+      "pipe_type": "Closed",
+      "suction_type": "Pressurised",
+      "path": null,
+      "pipe_content": "HP Fuel (Injection)",
+      "avg_installability_score": 1.0,
+      "avg_time_multiplier": 1.0,
+      "routing_status": null,
+      "class_flags": []
+    },
+    {
+      "id": "p_2",
+      "name": "Exhaust SB",
+      "start": {
+        "x": 4.0,
+        "y": 12.0,
+        "z": 1.5
+      },
+      "end": {
+        "x": 6.5,
+        "y": 12.0,
+        "z": 3.65
+      },
+      "diameter": 0.4,
+      "priority": 2,
+      "pipe_type": "Open",
+      "suction_type": "Pressurised",
+      "path": null,
+      "pipe_content": "Exhaust / Steam",
+      "avg_installability_score": 1.0,
+      "avg_time_multiplier": 1.0,
+      "routing_status": null,
+      "class_flags": []
+    },
+    {
+      "id": "p_6",
+      "name": "Ventilation",
+      "start": {
+        "x": 12.0,
+        "y": 1.5,
+        "z": 3.0
+      },
+      "end": {
+        "x": 0.0,
+        "y": 7.0,
+        "z": 3.0
+      },
+      "diameter": 0.4,
+      "priority": 2,
+      "pipe_type": "Open",
+      "suction_type": "Pressurised",
+      "path": null,
+      "pipe_content": "Exhaust / Steam",
+      "avg_installability_score": 1.0,
+      "avg_time_multiplier": 1.0,
+      "routing_status": null,
+      "class_flags": []
+    },
+    {
+      "id": "p_7",
+      "name": "Ventilation",
+      "start": {
+        "x": 0.0,
+        "y": 8.5,
+        "z": 3.0
+      },
+      "end": {
+        "x": 12.0,
+        "y": 12.0,
+        "z": 3.0
+      },
+      "diameter": 0.4,
+      "priority": 2,
+      "pipe_type": "Open",
+      "suction_type": "Pressurised",
+      "path": null,
+      "pipe_content": "Exhaust / Steam",
+      "avg_installability_score": 1.0,
+      "avg_time_multiplier": 1.0,
+      "routing_status": null,
+      "class_flags": []
+    }
+  ],
+  "no_go_zones": [],
+  "walking_space_list": [
+    {
+      "id": "ws_1",
+      "name": "Stairs",
+      "x_min": 4.0,
+      "y_min": 6.5,
+      "x_max": 8.0,
+      "y_max": 8.25,
+      "height": 2.1
+    },
+    {
+      "id": "ws_1",
+      "name": "Main walkway SB",
+      "x_min": 0.0,
+      "y_min": 0.5,
+      "x_max": 12.0,
+      "y_max": 1.0,
+      "height": 2.1
+    },
+    {
+      "id": "ws_2",
+      "name": "Main walkway PS",
+      "x_min": 0.0,
+      "y_min": 14.0,
+      "x_max": 12.0,
+      "y_max": 14.5,
+      "height": 2.1
+    },
+    {
+      "id": "ws_3",
+      "name": "Main walkway",
+      "x_min": 2.0,
+      "y_min": 3.5,
+      "x_max": 3.5,
+      "y_max": 11.5,
+      "height": 2.1
+    }
+  ],
+  "routing_tray_list": [
+    {
+      "id": "rt_0",
+      "name": "Port side tray",
+      "x_min": 0.0,
+      "y_min": 0.0,
+      "z_min": 3.5,
+      "x_max": 12.0,
+      "y_max": 1.5,
+      "z_max": 3.65
+    },
+    {
+      "id": "rt_1",
+      "name": "aft cable tray",
+      "x_min": 0.0,
+      "y_min": 0.0,
+      "z_min": 3.5,
+      "x_max": 1.5,
+      "y_max": 15.0,
+      "z_max": 3.65
+    }
+  ]
+}

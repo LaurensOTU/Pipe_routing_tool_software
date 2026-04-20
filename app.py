@@ -697,7 +697,7 @@ elif step == "3. Route Pipes":
     with st.form("pipe_form", clear_on_submit=False):
         p_name = st.text_input("Pipe name", value=default_p_name)
         c_a, c_b = st.columns(2)
-        p_diam = c_a.number_input("Diameter (m)", min_value=0.05, max_value=1.0, value=default_p_diam, step=0.05)
+        p_diam = c_a.number_input("Diameter (m)", min_value=0.005, max_value=1.0, value=default_p_diam, step=0.005)
         p_prio = c_b.number_input("Priority (1 = highest)", min_value=1, max_value=20, value=default_p_prio, step=1)
         
         col_t1, col_t2, col_t3 = st.columns(3)
