@@ -1,0 +1,16 @@
+﻿,Pipe,⌀ (mm),Priority,Length (m),Install score,Time mult,Waypoints
+0,ME STB HP Fuel Supply,32,1,10.00,0.992,0.94×,101
+1,ME PORT HP Fuel Supply,32,1,10.00,0.992,0.94×,101
+2,ME STB Jacket Cooling,80,2,12.10,0.969,1.01×,122
+3,ME PORT Jacket Cooling,80,2,9.30,0.946,1.08×,94
+4,Sea Water Cooling Main,100,2,7.70,0.868,1.32×,78
+5,Fire Main,80,2,12.40,0.997,0.92×,125
+6,Starting Air STB,40,2,13.20,0.950,1.06×,133
+7,DG1 Fuel Supply,25,3,3.60,0.965,1.02×,37
+8,DG2 Fuel Supply,25,3,3.30,0.963,1.02×,34
+9,Ballast Main,100,3,17.60,0.956,1.05×,177
+10,Starting Air PORT,40,3,10.80,0.899,1.22×,109
+11,Bilge Main Discharge,80,4,8.30,0.916,1.17×,84
+12,Bilge STB Collection,65,5,16.10,0.976,0.98×,162
+13,Bilge PORT Collection,65,5,15.10,0.982,0.96×,152
+14,Fuel Oil Transfer,50,5,5.00,1.000,0.91×,51
