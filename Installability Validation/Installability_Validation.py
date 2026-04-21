@@ -30,6 +30,7 @@ plt.xlabel("Installability weight in cost function")
 plt.ylabel("Average Installability Score")
 plt.title("Average Installability Score by different cost function weights")
 plt.xticks(rotation=45)
+plt.grid()
 plt.tight_layout()
 plt.show()
 
@@ -42,8 +43,23 @@ plt.xlabel("Installability weight in cost function")
 plt.ylabel("Average Time Multipliler Score")
 plt.title("Average Time Multiplier by different cost function weights")
 plt.xticks(rotation=45)
+plt.grid()
 plt.tight_layout()
 plt.show()
+
+
+plt.figure()
+for df_name, df in dfs_by_name.items():
+    avg_length = df["Length (m)"].mean()
+    plt.scatter(df["Installability weight"][0], avg_length)
+plt.xlabel("Installability weight in cost function")
+plt.ylabel("Average Length (m)")
+plt.title("Average Length by different cost function weights")
+plt.xticks(rotation=45)
+plt.grid()
+plt.tight_layout()
+plt.show()
+
 
 print("=== 2D plots have been created ===")
 
