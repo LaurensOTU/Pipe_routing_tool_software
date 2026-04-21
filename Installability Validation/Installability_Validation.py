@@ -26,7 +26,7 @@ plt.figure()
 for df_name, df in dfs_by_name.items():
     avg_II = df["Install score"].mean()
     plt.scatter(df["Installability weight"][0], avg_II)
-plt.xlabel("Installability weight")
+plt.xlabel("Installability weight in cost function")
 plt.ylabel("Average Installability Score")
 plt.title("Average Installability Score by different cost function weights")
 plt.xticks(rotation=45)
@@ -38,9 +38,47 @@ for df_name, df in dfs_by_name.items():
     stripped_TM_col = df["Time mult"].str.replace("×", "").astype(float)
     avg_TM = stripped_TM_col.mean()
     plt.scatter(df["Installability weight"][0], avg_TM)
-plt.xlabel("Installability weight")
+plt.xlabel("Installability weight in cost function")
 plt.ylabel("Average Time Multipliler Score")
 plt.title("Average Time Multiplier by different cost function weights")
 plt.xticks(rotation=45)
 plt.tight_layout()
 plt.show()
+
+print("=== 2D plots have been created ===")
+
+
+# --- 3D Visualization ---
+fig = plt.figure(figsize=(12, 8))
+ax = fig.add_subplot(111, projection='3d')
+
+# Prepare data for 3D plot
+plot_data = []
+for df_name, df in dfs_by_name.items():
+    weight = df["Installability weight"].iloc[0]
+    avg_II = df["Install score"].mean()
+    avg_TM = df["Time mult"].str.replace("×", "").astype(float).mean()
+    plot_data.append((weight, avg_II, avg_TM))
+
+# Sort by weight to make the trend line logical
+plot_data.sort(key=lambda x: x[0])
+weights, scores, multipliers = zip(*plot_data)
+
+# Scatter points and trend line
+ax.scatter(weights, scores, multipliers, c='blue', marker='o', s=60, label='Data points')
+ax.plot(weights, scores, multipliers, color='red', linestyle='--', alpha=0.6, label='Trend line')
+
+# Labeling
+ax.set_xlabel('Installability Weight', labelpad=10)
+ax.set_ylabel('Avg Installability Score', labelpad=10)
+ax.set_zlabel('Avg Time Multiplier', labelpad=10)
+ax.set_title('3D Trade-off Analysis: Weight vs. Score vs. Time Multiplier')
+ax.legend()
+
+# Improve view angle
+ax.view_init(elev=20, azim=45)
+
+plt.tight_layout()
+plt.show()
+
+print("=== 3D plots have been created ===")
