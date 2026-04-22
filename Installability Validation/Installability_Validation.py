@@ -20,7 +20,8 @@ for file in os.listdir(dir):
         dfs_by_name[df_name] = df
         print(f"\n=== DATA SUMMARY for {df_name} ===")
 
-# II plotting
+#%% Plotting
+
 x_data = []
 y_data = []
 
@@ -50,7 +51,7 @@ plt.tight_layout()
 plt.show()
 
 
-# TM plotting
+#TM plotting
 x_data = []
 y_data = []
 
@@ -95,6 +96,17 @@ plt.show()
 
 print("=== 2D plots have been created ===")
 
+# testing if II and TM are inverses:
+
+plt.figure()
+plt.plot(x_smooth, polynomial_TM(x_smooth), 'r--',label='Polynomial TM')
+plt.plot(x_smooth, polynomial_II(x_smooth), 'b--',label='Polynomial II')
+plt.xlabel("Installability weight in cost function")
+plt.ylabel("Average Installability Score or TM")
+plt.grid()
+plt.legend()
+plt.tight_layout()
+plt.show()
 
 # --- 3D Visualization ---
 fig = plt.figure(figsize=(12, 8))
@@ -130,3 +142,26 @@ plt.tight_layout()
 plt.show()
 
 print("=== 3D plots have been created ===")
+
+
+#%% II and TM correlation analysis
+# extract data for Pearson correlation analysis
+II_values = pd.DataFrame()
+TM_values = pd.DataFrame()
+for df_name, df in dfs_by_name.items():
+    II_values[df_name] = df["Install score"]
+    TM_values[df_name] = df["Time mult"].str.replace("×", "").astype(float)
+
+corr = []
+for col in II_values.columns:
+    correlation = II_values[col].corr(TM_values[col])
+    corr.append(correlation)
+    print(f"Pearson correlation between Installability Score and Time Multiplier for {col}: {correlation**2:.5f}")
+
+plt.figure()
+plt.plot(x_data, np.array(corr)**2, label='Pearson correlation')
+plt.grid(True)
+plt.xlabel("Installability weight in cost function")
+plt.ylabel("Pearson correlation")
+plt.title("Pearson correlation Installability index vs. Time Multiplier")
+plt.show()
