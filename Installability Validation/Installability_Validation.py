@@ -20,12 +20,27 @@ for file in os.listdir(dir):
         dfs_by_name[df_name] = df
         print(f"\n=== DATA SUMMARY for {df_name} ===")
 
-
+# II plotting
+x_data = []
+y_data = []
 
 plt.figure()
 for df_name, df in dfs_by_name.items():
     avg_II = df["Install score"].mean()
-    plt.scatter(df["Installability weight"][0], avg_II)
+    plt.scatter(df["Installability weight"][0], avg_II, label=df_name)
+    x_data.append(df["Installability weight"][0])
+    y_data.append(avg_II)
+# Fit polynomial :
+x_data = np.array(x_data)
+y_data = np.array(y_data)
+sort_idx = np.argsort(x_data)
+x_data = x_data[sort_idx]
+y_data = y_data[sort_idx]
+coefficients = np.polyfit(x_data, y_data, 4)
+polynomial_II = np.poly1d(coefficients)
+x_smooth = np.linspace(x_data.min(), x_data.max(), 100)
+plt.plot(x_smooth, polynomial_II(x_smooth), 'r--',label='Polynomial fit')
+
 plt.xlabel("Installability weight in cost function")
 plt.ylabel("Average Installability Score")
 plt.title("Average Installability Score by different cost function weights")
@@ -34,11 +49,28 @@ plt.grid()
 plt.tight_layout()
 plt.show()
 
+
+# TM plotting
+x_data = []
+y_data = []
+
 plt.figure()
 for df_name, df in dfs_by_name.items():
     stripped_TM_col = df["Time mult"].str.replace("×", "").astype(float)
     avg_TM = stripped_TM_col.mean()
     plt.scatter(df["Installability weight"][0], avg_TM)
+    x_data.append(df["Installability weight"][0])
+    y_data.append(avg_TM)
+
+x_data = np.array(x_data)
+y_data = np.array(y_data)
+sort_idx = np.argsort(x_data)
+x_data = x_data[sort_idx]
+y_data = y_data[sort_idx]
+coefficients = np.polyfit(x_data, y_data, 4)
+polynomial_TM = np.poly1d(coefficients)
+x_smooth = np.linspace(x_data.min(), x_data.max(), 100)
+plt.plot(x_smooth, polynomial_TM(x_smooth), 'r--',label='Polynomial fit')
 plt.xlabel("Installability weight in cost function")
 plt.ylabel("Average Time Multipliler Score")
 plt.title("Average Time Multiplier by different cost function weights")
