@@ -33,6 +33,31 @@ FLAMMABLE_CONTENTS: frozenset = frozenset([
 ])
 
 
+class PrecomputedGrid:
+    """
+    Cached BFS clearance map and static obstacle set for a fixed room layout.
+
+    Build once with AStar.build_precomputed_grid() after the room and machinery
+    are finalised. Pass as precomputed_grid= to AStar.__init__() to skip the
+    expensive BFS on every subsequent routing call — only the A* search runs.
+
+    The grid is invalidated whenever the room geometry, machinery positions,
+    no-go zones, walking spaces, or routing trays change.
+    """
+
+    def __init__(
+        self,
+        obstacles: set,
+        clearance_map,          # np.ndarray or None
+        grid_resolution: float,
+        layout_hash: str,       # fingerprint of the layout that produced this grid
+    ):
+        self.obstacles       = obstacles
+        self.clearance_map   = clearance_map
+        self.grid_resolution = grid_resolution
+        self.layout_hash     = layout_hash
+
+
 class AStar:
     """
     3-D A* pipe router with fuzzy installability cost penalty.
@@ -70,6 +95,8 @@ class AStar:
         w_installability: float = 0.0,
         w_parallel: float = 0.5,
         w_suction: float = 2.0,
+        w_wall_ceiling: float = 0.0,
+        precomputed_grid: "PrecomputedGrid" = None,
     ):
         self.room             = room
         self.machinery_list   = machinery_list
@@ -84,18 +111,27 @@ class AStar:
         self.w_installability = w_installability
         self.w_parallel       = w_parallel
         self.w_suction        = w_suction
+        self.w_wall_ceiling   = w_wall_ceiling
 
         # Offset for the 0.5m space below the engine room (z_min = -0.5)
         self.z_min_world = -0.5
 
-        # Build static obstacle set (machinery + no-go zones + walking spaces + trays)
-        self.obstacles: Set[Tuple[int, int, int]] = set()
-        self._mark_obstacles()
+        if precomputed_grid is not None:
+            # Reuse cached obstacle set and clearance map — BFS is skipped entirely.
+            # find_path() always copies self.obstacles before mutating it, so sharing
+            # the reference across routing runs is safe.
+            self.obstacles     = precomputed_grid.obstacles
+            self.clearance_map = precomputed_grid.clearance_map
+            print("[AStar] Using precomputed grid — BFS skipped.")
+        else:
+            # Build static obstacle set (machinery + no-go zones + walking spaces + trays)
+            self.obstacles: Set[Tuple[int, int, int]] = set()
+            self._mark_obstacles()
 
-        # Pre-compute clearance map if fuzzy penalty is active
-        self.clearance_map: Optional[np.ndarray] = None
-        if self.w_installability > 0 and self.fuzzy is not None:
-            self._build_clearance_map()
+            # Pre-compute clearance map if fuzzy penalty is active
+            self.clearance_map: Optional[np.ndarray] = None
+            if self.w_installability > 0 and self.fuzzy is not None:
+                self._build_clearance_map()
 
     # ------------------------------------------------------------------
     # Grid utilities
@@ -462,6 +498,14 @@ class AStar:
                 if nb in parallel_friendly:
                     move_cost = max(0.1, move_cost - self.w_parallel)
 
+                # Wall and ceiling preference discount
+                is_near_wall = (nb[0] <= 1 or nb[0] >= max_gx - 1 or 
+                                nb[1] <= 1 or nb[1] >= max_gy - 1)
+                is_near_ceiling = (nb[2] >= max_gz - 1)
+                
+                if is_near_wall or is_near_ceiling:
+                    move_cost = max(0.1, move_cost - self.w_wall_ceiling)
+
                 new_g = g + move_cost
                 if new_g < visited.get(nb, math.inf):
                     visited[nb] = new_g
@@ -629,3 +673,52 @@ class AStar:
                             break
 
         return flags
+
+    # ------------------------------------------------------------------
+    # Pre-computation helper
+    # ------------------------------------------------------------------
+
+    @classmethod
+    def build_precomputed_grid(
+        cls,
+        room,
+        machinery_list,
+        no_go_zones,
+        walking_spaces=None,
+        routing_trays=None,
+        fuzzy=None,
+        grid_resolution: float = 0.1,
+        layout_hash: str = "",
+    ) -> "PrecomputedGrid":
+        """
+        Build the static obstacle set and BFS clearance map for the current
+        room layout without running any A* routing.
+
+        Returns a PrecomputedGrid that can be passed as precomputed_grid= to
+        AStar.__init__() on every subsequent routing call, completely skipping
+        the BFS step and significantly reducing re-routing time when only
+        weight sliders have changed.
+
+        Parameters
+        ----------
+        layout_hash : str
+            An opaque fingerprint of the layout inputs (room + machinery +
+            zones).  Stored in the returned grid so the caller can detect
+            staleness without recomputing the grid.
+        """
+        tmp = cls(
+            room=room,
+            machinery_list=machinery_list,
+            no_go_zones=no_go_zones,
+            walking_spaces=walking_spaces,
+            routing_trays=routing_trays,
+            fuzzy=fuzzy,
+            grid_resolution=grid_resolution,
+            w_installability=1.0,   # forces clearance map to always be built
+        )
+        return PrecomputedGrid(
+            obstacles=tmp.obstacles,
+            clearance_map=tmp.clearance_map,
+            grid_resolution=grid_resolution,
+            layout_hash=layout_hash,
+        )

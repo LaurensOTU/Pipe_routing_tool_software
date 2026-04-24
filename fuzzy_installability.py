@@ -44,7 +44,7 @@ DEFAULT_MULTIPLIERS = {
 }
 
 # Normalised installability score per category label (0 = bad, 1 = ideal)
-# s_k derived by normalising with 9 responses from multipliers
+# s_k derived by normalising with 9 responses from time multipliers
 CATEGORY_SCORES = {
     'impossible': 0.00,
     'too_tight':  0.36,

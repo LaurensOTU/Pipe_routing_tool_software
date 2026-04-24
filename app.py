@@ -9,6 +9,8 @@ Streamlit front-end with three workflow stages:
 """
 
 import os
+import hashlib
+import json
 import streamlit as st
 from classes import Room, Machinery, Pipe, NoGoZone, Position, WalkingSpace, RoutingTray
 from visualization import create_room_figure, create_snap_figure
@@ -16,6 +18,21 @@ from algorithms import AStar
 from fuzzy_installability import FuzzyInstallability
 from export_utils import export_to_obj
 from persistence_utils import serialize_state, deserialize_state
+
+
+def _layout_hash(room, machinery_list, no_go_zones, walking_spaces, routing_trays) -> str:
+    """Fast fingerprint of the room layout — changes whenever the obstacle set would change."""
+    data = {
+        "r": (room.length, room.width, room.height) if room else None,
+        "m": sorted(
+            (m.id, m.position.x, m.position.y, m.position.z, m.length, m.width, m.height)
+            for m in machinery_list if m.position
+        ),
+        "ngz": [(z.x_min, z.y_min, z.z_min, z.x_max, z.y_max, z.z_max) for z in no_go_zones],
+        "ws":  [(w.x_min, w.y_min, w.x_max, w.y_max, w.height) for w in walking_spaces],
+        "rt":  [(t.x_min, t.y_min, t.z_min, t.x_max, t.y_max, t.z_max) for t in routing_trays],
+    }
+    return hashlib.md5(json.dumps(data, sort_keys=True).encode()).hexdigest()[:10]
 
 # ---------------------------------------------------------------------------
 # Page config
@@ -109,6 +126,7 @@ for key, default in [
     ("machinery_edit_idx", None),
     ("pipe_edit_idx",      None),
     ("project_path",      ""),
+    ("precomputed_grid",  None),   # cached BFS result — None until user pre-computes
 ]:
     if key not in st.session_state:
         st.session_state[key] = default
@@ -174,7 +192,8 @@ with st.sidebar.expander("💾 Project Storage", expanded=False):
                 st.session_state.walking_space_list = w
                 st.session_state.routing_tray_list = t
                 st.session_state.project_path = uploaded_file.name
-                
+                st.session_state.precomputed_grid = None   # layout changed — grid is stale
+
                 st.success(f"Project restored from {uploaded_file.name}!")
                 st.rerun()
             except Exception as e:
@@ -207,6 +226,7 @@ if step == "1. Define Room":
 
     if st.button("Initialise Room"):
         st.session_state.room = Room(length=length, width=width, height=height)
+        st.session_state.precomputed_grid = None   # room changed — grid is stale
         st.success(f"Room initialised: {length} × {width} × {height} m")
         st.rerun()
 
@@ -371,6 +391,7 @@ elif step == "2. Place Machinery":
         else:
             st.session_state.machinery_list.append(new_machine)
             st.success(f"Added '{m_name}'")
+        st.session_state.precomputed_grid = None   # obstacle set changed — grid is stale
         st.rerun()
     
     if is_editing:
@@ -400,6 +421,7 @@ elif step == "2. Place Machinery":
                     st.session_state.machinery_list.pop(idx)
                     if st.session_state.machinery_edit_idx == idx:
                         st.session_state.machinery_edit_idx = None
+                    st.session_state.precomputed_grid = None   # obstacle set changed
                     st.rerun()
     else:
         st.info("No machinery placed yet. Use the grid and form above to add machines.")
@@ -432,6 +454,7 @@ elif step == "2. Place Machinery":
             WalkingSpace(id=wid, name=ws_name,
                          x_min=ws_x0, y_min=ws_y0, x_max=ws_x1, y_max=ws_y1)
         )
+        st.session_state.precomputed_grid = None
         st.success(f"Added walking space '{ws_name}'")
         st.rerun()
 
@@ -441,6 +464,7 @@ elif step == "2. Place Machinery":
             c_i.text(f"{w.name}  |  X {w.x_min}–{w.x_max}  Y {w.y_min}–{w.y_max}  h=2.1 m")
             if c_b.button("Remove", key=f"rmws_{idx}"):
                 st.session_state.walking_space_list.pop(idx)
+                st.session_state.precomputed_grid = None
                 st.rerun()
 
     st.divider()
@@ -479,6 +503,7 @@ elif step == "2. Place Machinery":
                         x_min=rt_x0, y_min=rt_y0, z_min=rt_z0,
                         x_max=rt_x1, y_max=rt_y1, z_max=rt_z1)
         )
+        st.session_state.precomputed_grid = None
         st.success(f"Added routing tray '{rt_name}'")
         st.rerun()
 
@@ -491,6 +516,7 @@ elif step == "2. Place Machinery":
             )
             if c_b.button("Remove", key=f"rmrt_{idx}"):
                 st.session_state.routing_tray_list.pop(idx)
+                st.session_state.precomputed_grid = None
                 st.rerun()
 
     st.divider()
@@ -827,11 +853,68 @@ elif step == "3. Route Pipes":
     st.divider()
 
     # -----------------------------------------------------------------------
-    # Routing settings + run button
+    # Step 1 — Pre-compute Grid (BFS clearance map)
+    # -----------------------------------------------------------------------
+    st.subheader("Grid Pre-computation")
+
+    # Compute a fingerprint of the current layout to detect staleness
+    _current_hash = _layout_hash(
+        room,
+        st.session_state.machinery_list,
+        st.session_state.no_go_zones,
+        st.session_state.walking_space_list,
+        st.session_state.routing_tray_list,
+    )
+    _grid = st.session_state.precomputed_grid
+    _grid_ready  = _grid is not None and _grid.layout_hash == _current_hash
+    _grid_stale  = _grid is not None and _grid.layout_hash != _current_hash
+
+    if _grid_ready:
+        st.success(
+            "✅ Grid is up to date — BFS clearance map ready. "
+            "Adjust sliders and click **Route All Pipes** (A* only, no BFS rebuild)."
+        )
+    elif _grid_stale:
+        st.warning(
+            "⚠️ Room layout has changed since the last pre-computation. "
+            "Re-run **Pre-compute Grid** before routing."
+        )
+    else:
+        st.info(
+            "ℹ️ No grid computed yet. Click **Pre-compute Grid** once to build the "
+            "BFS clearance map. You can then route pipes and adjust weight sliders "
+            "without repeating the heavy computation."
+        )
+
+    if st.button(
+        "🔧  Pre-compute Grid",
+        disabled=not room or not st.session_state.machinery_list,
+        help="Builds the obstacle set and BFS clearance map once. "
+             "Re-run only when the room layout changes.",
+    ):
+        with st.spinner("Building obstacle grid and BFS clearance map…  (this runs once)"):
+            grid = AStar.build_precomputed_grid(
+                room=room,
+                machinery_list=st.session_state.machinery_list,
+                no_go_zones=st.session_state.no_go_zones,
+                walking_spaces=st.session_state.walking_space_list,
+                routing_trays=st.session_state.routing_tray_list,
+                fuzzy=fuzzy,
+                grid_resolution=0.1,
+                layout_hash=_current_hash,
+            )
+            st.session_state.precomputed_grid = grid
+        st.success("Grid pre-computed — ready for fast routing!")
+        st.rerun()
+
+    st.divider()
+
+    # -----------------------------------------------------------------------
+    # Step 2 — Routing settings + run button (A* only)
     # -----------------------------------------------------------------------
     st.subheader("Routing Settings")
 
-    col_r1, col_r2, col_r3, col_r4 = st.columns(4)
+    col_r1, col_r2, col_r3, col_r4, col_r5 = st.columns(5)
     w_installability = col_r1.slider(
         "Installability weight",
         min_value=0.0, max_value=5.0, value=1.0, step=0.5,
@@ -852,15 +935,28 @@ elif step == "3. Route Pipes":
         min_value=0.0, max_value=10.0, value=5.0, step=0.5,
         help="Higher values force suction pipes to stay as low as possible.",
     )
+    w_wall_ceiling = col_r5.slider(
+        "Wall/Ceiling preference",
+        min_value=0.0, max_value=2.0, value=0.0, step=0.25,
+        help="Cost discount per step near walls or ceiling. Encourages perimeter routing.",
+    )
 
     run_col, clr_col = st.columns([3, 1])
+
+    # Resolve which grid to use — precomputed if valid, otherwise build inline
+    _route_grid = st.session_state.precomputed_grid if _grid_ready else None
+    _spinner_msg = (
+        "Running A* routing…  (grid already built)"
+        if _route_grid is not None
+        else "Building grid and running A* routing…  (pre-compute first for faster re-runs)"
+    )
 
     if run_col.button(
         "🚀  Route All Pipes",
         type="primary",
         disabled=not st.session_state.pipe_list,
     ):
-        with st.spinner("Building grid and running A* routing…  (0.1 m resolution)"):
+        with st.spinner(_spinner_msg):
             astar = AStar(
                 room=room,
                 machinery_list=st.session_state.machinery_list,
@@ -868,13 +964,15 @@ elif step == "3. Route Pipes":
                 walking_spaces=st.session_state.walking_space_list,
                 routing_trays=st.session_state.routing_tray_list,
                 fuzzy=fuzzy,
-                grid_resolution=0.1,   # fine pathfinding grid; snap grid is separate
+                grid_resolution=0.1,
                 w_dist=1.0,
                 w_bend=w_bend,
                 w_vertical=1.5,
                 w_installability=w_installability,
                 w_parallel=w_parallel,
                 w_suction=w_suction,
+                w_wall_ceiling=w_wall_ceiling,
+                precomputed_grid=_route_grid,
             )
             routed = astar.route_all(st.session_state.pipe_list)
             st.session_state.pipe_list = routed
