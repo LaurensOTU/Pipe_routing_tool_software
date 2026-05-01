@@ -1,0 +1,2323 @@
+{
+  "room": {
+    "length": 14.602,
+    "width": 19.734,
+    "height": 11.215
+  },
+  "machinery_list": [
+    {
+      "id": "m_0",
+      "name": "Equipment_000",
+      "length": 12.09,
+      "width": 14.259,
+      "height": 7.599,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 2.159,
+        "y": 2.6,
+        "z": 0.915
+      },
+      "is_locked": true
+    },
+    {
+      "id": "m_1",
+      "name": "Equipment_001",
+      "length": 9.41,
+      "width": 12.581,
+      "height": 4.341,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 3.829,
+        "y": 2.704,
+        "z": 1.458
+      },
+      "is_locked": true
+    },
+    {
+      "id": "m_2",
+      "name": "Equipment_002",
+      "length": 10.966,
+      "width": 12.622,
+      "height": 3.65,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 2.26,
+        "y": 5.332,
+        "z": 3.64
+      },
+      "is_locked": true
+    },
+    {
+      "id": "m_3",
+      "name": "Equipment_003",
+      "length": 11.958,
+      "width": 11.745,
+      "height": 3.483,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 1.788,
+        "y": 2.353,
+        "z": 4.382
+      },
+      "is_locked": true
+    },
+    {
+      "id": "m_4",
+      "name": "Equipment_004",
+      "length": 4.519,
+      "width": 10.364,
+      "height": 9.022,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 8.656,
+        "y": 5.673,
+        "z": 1.291
+      },
+      "is_locked": true
+    },
+    {
+      "id": "m_5",
+      "name": "Equipment_005",
+      "length": 10.935,
+      "width": 8.832,
+      "height": 3.801,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 2.26,
+        "y": 6.657,
+        "z": 3.521
+      },
+      "is_locked": true
+    },
+    {
+      "id": "m_6",
+      "name": "Equipment_006",
+      "length": 8.15,
+      "width": 7.963,
+      "height": 5.016,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 3.942,
+        "y": 5.917,
+        "z": 1.417
+      },
+      "is_locked": true
+    },
+    {
+      "id": "m_7",
+      "name": "Equipment_007",
+      "length": 7.408,
+      "width": 12.415,
+      "height": 3.164,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 5.837,
+        "y": 1.81,
+        "z": 1.458
+      },
+      "is_locked": true
+    },
+    {
+      "id": "m_8",
+      "name": "Equipment_008",
+      "length": 6.182,
+      "width": 7.072,
+      "height": 6.251,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 7.006,
+        "y": 6.061,
+        "z": 4.083
+      },
+      "is_locked": true
+    },
+    {
+      "id": "m_9",
+      "name": "Equipment_009",
+      "length": 7.944,
+      "width": 9.854,
+      "height": 3.233,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 0,
+        "y": 7.64,
+        "z": 1.454
+      },
+      "is_locked": true
+    },
+    {
+      "id": "m_10",
+      "name": "Equipment_010",
+      "length": 4.889,
+      "width": 10.515,
+      "height": 4.695,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 5.732,
+        "y": 4.132,
+        "z": 1.999
+      },
+      "is_locked": true
+    },
+    {
+      "id": "m_11",
+      "name": "Equipment_011",
+      "length": 4.012,
+      "width": 13.803,
+      "height": 4.074,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 2.205,
+        "y": 0.647,
+        "z": 1.333
+      },
+      "is_locked": true
+    },
+    {
+      "id": "m_12",
+      "name": "Equipment_012",
+      "length": 4.152,
+      "width": 12.265,
+      "height": 4.17,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 2.205,
+        "y": 2.284,
+        "z": 1.333
+      },
+      "is_locked": true
+    },
+    {
+      "id": "m_13",
+      "name": "Equipment_013",
+      "length": 7.531,
+      "width": 11.563,
+      "height": 2.312,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 2.273,
+        "y": 2.235,
+        "z": 5.367
+      },
+      "is_locked": true
+    },
+    {
+      "id": "m_14",
+      "name": "Equipment_014",
+      "length": 8.964,
+      "width": 11.688,
+      "height": 1.73,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 2.273,
+        "y": 2.11,
+        "z": 5.95
+      },
+      "is_locked": true
+    },
+    {
+      "id": "m_15",
+      "name": "Equipment_015",
+      "length": 4.514,
+      "width": 11.065,
+      "height": 3.619,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 6.814,
+        "y": 1.552,
+        "z": 3.796
+      },
+      "is_locked": true
+    },
+    {
+      "id": "m_16",
+      "name": "Equipment_016",
+      "length": 10.884,
+      "width": 12.995,
+      "height": 1.112,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 2.31,
+        "y": 5.014,
+        "z": 1.373
+      },
+      "is_locked": true
+    },
+    {
+      "id": "m_17",
+      "name": "Equipment_017",
+      "length": 10.193,
+      "width": 4.84,
+      "height": 2.561,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 2.159,
+        "y": 6.252,
+        "z": 4.575
+      },
+      "is_locked": true
+    },
+    {
+      "id": "m_18",
+      "name": "Equipment_018",
+      "length": 3.291,
+      "width": 11.38,
+      "height": 3.047,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 8.632,
+        "y": 2.337,
+        "z": 1.607
+      },
+      "is_locked": true
+    },
+    {
+      "id": "m_19",
+      "name": "Equipment_019",
+      "length": 5.326,
+      "width": 2.831,
+      "height": 6.66,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 8.809,
+        "y": 1.637,
+        "z": 1.635
+      },
+      "is_locked": true
+    },
+    {
+      "id": "m_20",
+      "name": "Equipment_020",
+      "length": 10.234,
+      "width": 4.895,
+      "height": 1.949,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 1.884,
+        "y": 14.639,
+        "z": 6.006
+      },
+      "is_locked": true
+    },
+    {
+      "id": "m_21",
+      "name": "Equipment_021",
+      "length": 7.841,
+      "width": 10.46,
+      "height": 1.17,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 5.254,
+        "y": 3.347,
+        "z": 1.795
+      },
+      "is_locked": true
+    },
+    {
+      "id": "m_22",
+      "name": "Equipment_022",
+      "length": 3.1,
+      "width": 11.431,
+      "height": 2.547,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 8.852,
+        "y": 2.337,
+        "z": 1.415
+      },
+      "is_locked": true
+    },
+    {
+      "id": "m_23",
+      "name": "Equipment_023",
+      "length": 7.13,
+      "width": 9.088,
+      "height": 1.173,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 2.598,
+        "y": 1.727,
+        "z": 3.517
+      },
+      "is_locked": true
+    },
+    {
+      "id": "m_24",
+      "name": "Equipment_024",
+      "length": 3.791,
+      "width": 6.919,
+      "height": 2.721,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 7.821,
+        "y": 3.957,
+        "z": 1.337
+      },
+      "is_locked": true
+    },
+    {
+      "id": "m_25",
+      "name": "Equipment_025",
+      "length": 4.32,
+      "width": 5.4,
+      "height": 3.039,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 6.933,
+        "y": 2.337,
+        "z": 1.615
+      },
+      "is_locked": true
+    },
+    {
+      "id": "m_26",
+      "name": "Equipment_026",
+      "length": 6.189,
+      "width": 5.687,
+      "height": 1.79,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 6.543,
+        "y": 1.172,
+        "z": 6.565
+      },
+      "is_locked": true
+    },
+    {
+      "id": "m_27",
+      "name": "Equipment_027",
+      "length": 9.817,
+      "width": 6.766,
+      "height": 0.937,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 3.281,
+        "y": 10.712,
+        "z": 1.133
+      },
+      "is_locked": true
+    },
+    {
+      "id": "m_28",
+      "name": "Equipment_028",
+      "length": 4.075,
+      "width": 5.687,
+      "height": 2.546,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 7.178,
+        "y": 2.337,
+        "z": 1.415
+      },
+      "is_locked": true
+    },
+    {
+      "id": "m_29",
+      "name": "Equipment_029",
+      "length": 6.432,
+      "width": 2.324,
+      "height": 3.844,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 2.368,
+        "y": 1.623,
+        "z": 1.265
+      },
+      "is_locked": true
+    },
+    {
+      "id": "m_30",
+      "name": "Equipment_030",
+      "length": 4.144,
+      "width": 3.158,
+      "height": 4.29,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 7.185,
+        "y": 1.552,
+        "z": 3.015
+      },
+      "is_locked": true
+    },
+    {
+      "id": "m_31",
+      "name": "Equipment_031",
+      "length": 1.45,
+      "width": 13.334,
+      "height": 2.903,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 2.474,
+        "y": 2.564,
+        "z": 4.191
+      },
+      "is_locked": true
+    },
+    {
+      "id": "m_32",
+      "name": "Equipment_032",
+      "length": 1.45,
+      "width": 13.624,
+      "height": 2.503,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 2.474,
+        "y": 2.444,
+        "z": 4.191
+      },
+      "is_locked": true
+    },
+    {
+      "id": "m_33",
+      "name": "Equipment_033",
+      "length": 11.137,
+      "width": 1.299,
+      "height": 3.399,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 2.173,
+        "y": 0.033,
+        "z": 1.37
+      },
+      "is_locked": true
+    },
+    {
+      "id": "m_34",
+      "name": "Equipment_034",
+      "length": 11.134,
+      "width": 1.296,
+      "height": 3.398,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 2.173,
+        "y": 18.395,
+        "z": 1.371
+      },
+      "is_locked": true
+    },
+    {
+      "id": "m_35",
+      "name": "Equipment_035",
+      "length": 7.963,
+      "width": 5.26,
+      "height": 1.17,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 5.134,
+        "y": 1.537,
+        "z": 1.795
+      },
+      "is_locked": true
+    },
+    {
+      "id": "m_36",
+      "name": "Equipment_036",
+      "length": 6.83,
+      "width": 9.205,
+      "height": 0.705,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 6.38,
+        "y": 5.02,
+        "z": 1.458
+      },
+      "is_locked": true
+    },
+    {
+      "id": "m_37",
+      "name": "Equipment_037",
+      "length": 9.385,
+      "width": 1.914,
+      "height": 2.24,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 3.837,
+        "y": 2.657,
+        "z": 2.845
+      },
+      "is_locked": true
+    },
+    {
+      "id": "m_38",
+      "name": "Equipment_038",
+      "length": 5.497,
+      "width": 2.05,
+      "height": 3.542,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 2.932,
+        "y": 2.102,
+        "z": 2.094
+      },
+      "is_locked": true
+    },
+    {
+      "id": "m_39",
+      "name": "Equipment_039",
+      "length": 6.149,
+      "width": 1.896,
+      "height": 3.363,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 2.64,
+        "y": 2.417,
+        "z": 2.163
+      },
+      "is_locked": true
+    },
+    {
+      "id": "m_40",
+      "name": "Equipment_040",
+      "length": 6.205,
+      "width": 2.735,
+      "height": 2.305,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 2.668,
+        "y": 15.632,
+        "z": 5.165
+      },
+      "is_locked": true
+    },
+    {
+      "id": "m_41",
+      "name": "Equipment_041",
+      "length": 8.14,
+      "width": 7.728,
+      "height": 0.57,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 2.502,
+        "y": 0.954,
+        "z": 7.335
+      },
+      "is_locked": true
+    },
+    {
+      "id": "m_42",
+      "name": "Equipment_042",
+      "length": 2.004,
+      "width": 14.11,
+      "height": 1.245,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 11.307,
+        "y": 2.812,
+        "z": 0.035
+      },
+      "is_locked": true
+    },
+    {
+      "id": "m_43",
+      "name": "Equipment_043",
+      "length": 10.625,
+      "width": 6.325,
+      "height": 0.521,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 1.893,
+        "y": 13.237,
+        "z": 7.401
+      },
+      "is_locked": true
+    },
+    {
+      "id": "m_44",
+      "name": "Equipment_044",
+      "length": 7.731,
+      "width": 11.25,
+      "height": 0.36,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 5.366,
+        "y": 3.537,
+        "z": 4.125
+      },
+      "is_locked": true
+    },
+    {
+      "id": "m_45",
+      "name": "Equipment_045",
+      "length": 6.785,
+      "width": 1.915,
+      "height": 2.3,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 2.562,
+        "y": 14.627,
+        "z": 5.17
+      },
+      "is_locked": true
+    },
+    {
+      "id": "m_46",
+      "name": "Equipment_046",
+      "length": 6.65,
+      "width": 7.588,
+      "height": 0.57,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 2.353,
+        "y": 1.254,
+        "z": 7.335
+      },
+      "is_locked": true
+    },
+    {
+      "id": "m_47",
+      "name": "Equipment_047",
+      "length": 5.665,
+      "width": 1.815,
+      "height": 2.713,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 5.32,
+        "y": 11.649,
+        "z": 1.732
+      },
+      "is_locked": true
+    },
+    {
+      "id": "m_48",
+      "name": "Equipment_048",
+      "length": 5.197,
+      "width": 2.233,
+      "height": 2.33,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 3.925,
+        "y": 0.442,
+        "z": 5.3
+      },
+      "is_locked": true
+    },
+    {
+      "id": "m_49",
+      "name": "Equipment_049",
+      "length": 10.884,
+      "width": 2.12,
+      "height": 1.082,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 2.31,
+        "y": 2.479,
+        "z": 1.403
+      },
+      "is_locked": true
+    },
+    {
+      "id": "m_50",
+      "name": "Equipment_050",
+      "length": 5.045,
+      "width": 1.881,
+      "height": 2.549,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 8.193,
+        "y": 2.833,
+        "z": 5.361
+      },
+      "is_locked": true
+    },
+    {
+      "id": "m_51",
+      "name": "Equipment_051",
+      "length": 5.13,
+      "width": 2.192,
+      "height": 2.044,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 3.812,
+        "y": 0.607,
+        "z": 5.69
+      },
+      "is_locked": true
+    },
+    {
+      "id": "m_52",
+      "name": "Equipment_052",
+      "length": 3.571,
+      "width": 4.457,
+      "height": 1.432,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 8.041,
+        "y": 4.307,
+        "z": 1.605
+      },
+      "is_locked": true
+    },
+    {
+      "id": "m_53",
+      "name": "Equipment_053",
+      "length": 4.725,
+      "width": 1.835,
+      "height": 2.556,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 8.512,
+        "y": 2.947,
+        "z": 5.354
+      },
+      "is_locked": true
+    },
+    {
+      "id": "m_54",
+      "name": "Equipment_054",
+      "length": 7.809,
+      "width": 10.41,
+      "height": 0.27,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 5.213,
+        "y": 3.227,
+        "z": 1.795
+      },
+      "is_locked": true
+    },
+    {
+      "id": "m_55",
+      "name": "Equipment_055",
+      "length": 2.021,
+      "width": 8.51,
+      "height": 1.245,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 9.887,
+        "y": 5.612,
+        "z": 0.035
+      },
+      "is_locked": true
+    },
+    {
+      "id": "m_56",
+      "name": "Equipment_056",
+      "length": 6.619,
+      "width": 1.268,
+      "height": 2.534,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 6.606,
+        "y": 1.212,
+        "z": 5.044
+      },
+      "is_locked": true
+    },
+    {
+      "id": "m_57",
+      "name": "Equipment_057",
+      "length": 4.82,
+      "width": 5.568,
+      "height": 0.785,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 0,
+        "y": 13.622,
+        "z": 7.402
+      },
+      "is_locked": true
+    },
+    {
+      "id": "m_58",
+      "name": "Equipment_058",
+      "length": 7.52,
+      "width": 9.33,
+      "height": 0.3,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 5.577,
+        "y": 3.357,
+        "z": 4.185
+      },
+      "is_locked": true
+    },
+    {
+      "id": "m_59",
+      "name": "Equipment_059",
+      "length": 6.327,
+      "width": 4.552,
+      "height": 0.723,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 2.352,
+        "y": 6.272,
+        "z": 7.134
+      },
+      "is_locked": true
+    },
+    {
+      "id": "m_60",
+      "name": "Equipment_060",
+      "length": 5.215,
+      "width": 1.49,
+      "height": 2.677,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 4.955,
+        "y": 13.627,
+        "z": 4.87
+      },
+      "is_locked": true
+    },
+    {
+      "id": "m_61",
+      "name": "Equipment_061",
+      "length": 3.742,
+      "width": 2.67,
+      "height": 2.07,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 5.101,
+        "y": 0.592,
+        "z": 5.675
+      },
+      "is_locked": true
+    },
+    {
+      "id": "m_62",
+      "name": "Equipment_062",
+      "length": 5.51,
+      "width": 1.605,
+      "height": 2.3,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 3.635,
+        "y": 17.632,
+        "z": 5.17
+      },
+      "is_locked": true
+    },
+    {
+      "id": "m_63",
+      "name": "Equipment_063",
+      "length": 8.443,
+      "width": 0.705,
+      "height": 3.405,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 4.616,
+        "y": 1.774,
+        "z": 4.173
+      },
+      "is_locked": true
+    },
+    {
+      "id": "m_64",
+      "name": "Equipment_064",
+      "length": 5.028,
+      "width": 1.495,
+      "height": 2.677,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 4.806,
+        "y": 13.767,
+        "z": 4.87
+      },
+      "is_locked": true
+    },
+    {
+      "id": "m_65",
+      "name": "Equipment_065",
+      "length": 2.058,
+      "width": 4.093,
+      "height": 2.38,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 10.411,
+        "y": 2.766,
+        "z": 5.978
+      },
+      "is_locked": true
+    },
+    {
+      "id": "m_66",
+      "name": "Equipment_066",
+      "length": 1.475,
+      "width": 7.131,
+      "height": 1.889,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 11.046,
+        "y": 6.752,
+        "z": 1.702
+      },
+      "is_locked": true
+    },
+    {
+      "id": "m_67",
+      "name": "Equipment_067",
+      "length": 10.884,
+      "width": 1.675,
+      "height": 1.082,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 2.31,
+        "y": 2.224,
+        "z": 1.403
+      },
+      "is_locked": true
+    },
+    {
+      "id": "m_68",
+      "name": "Equipment_068",
+      "length": 10.865,
+      "width": 3.538,
+      "height": 0.495,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 2.283,
+        "y": 10.833,
+        "z": 1.565
+      },
+      "is_locked": true
+    },
+    {
+      "id": "m_69",
+      "name": "Equipment_069",
+      "length": 4.137,
+      "width": 1.322,
+      "height": 3.462,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 2.236,
+        "y": 1.76,
+        "z": 4.354
+      },
+      "is_locked": true
+    },
+    {
+      "id": "m_70",
+      "name": "Equipment_070",
+      "length": 4.164,
+      "width": 1.302,
+      "height": 3.462,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 2.236,
+        "y": 1.64,
+        "z": 4.354
+      },
+      "is_locked": true
+    },
+    {
+      "id": "m_71",
+      "name": "Equipment_071",
+      "length": 4.112,
+      "width": 7.435,
+      "height": 0.57,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 2.49,
+        "y": 1.567,
+        "z": 7.335
+      },
+      "is_locked": true
+    },
+    {
+      "id": "m_72",
+      "name": "Equipment_072",
+      "length": 10.884,
+      "width": 1.455,
+      "height": 1.082,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 2.31,
+        "y": 1.744,
+        "z": 1.403
+      },
+      "is_locked": true
+    },
+    {
+      "id": "m_73",
+      "name": "Equipment_073",
+      "length": 1.727,
+      "width": 5.687,
+      "height": 1.709,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 10.842,
+        "y": 1.172,
+        "z": 6.574
+      },
+      "is_locked": true
+    },
+    {
+      "id": "m_74",
+      "name": "Equipment_074",
+      "length": 5.715,
+      "width": 1.206,
+      "height": 2.246,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 5.32,
+        "y": 6.484,
+        "z": 1.633
+      },
+      "is_locked": true
+    },
+    {
+      "id": "m_75",
+      "name": "Equipment_075",
+      "length": 1.828,
+      "width": 1.55,
+      "height": 4.771,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 11.302,
+        "y": 10.57,
+        "z": 3.764
+      },
+      "is_locked": true
+    },
+    {
+      "id": "m_76",
+      "name": "Equipment_076",
+      "length": 6.007,
+      "width": 4.252,
+      "height": 0.491,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 2.352,
+        "y": 6.272,
+        "z": 7.367
+      },
+      "is_locked": true
+    },
+    {
+      "id": "m_77",
+      "name": "Equipment_077",
+      "length": 3.705,
+      "width": 3.454,
+      "height": 0.972,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 1.796,
+        "y": 2.34,
+        "z": 6.845
+      },
+      "is_locked": true
+    },
+    {
+      "id": "m_78",
+      "name": "Equipment_078",
+      "length": 4.053,
+      "width": 0.798,
+      "height": 3.405,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 9.005,
+        "y": 1.212,
+        "z": 4.173
+      },
+      "is_locked": true
+    },
+    {
+      "id": "m_79",
+      "name": "Equipment_079",
+      "length": 7.248,
+      "width": 0.572,
+      "height": 2.627,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 2.328,
+        "y": 1.638,
+        "z": 2.065
+      },
+      "is_locked": true
+    },
+    {
+      "id": "m_80",
+      "name": "Equipment_080",
+      "length": 3.05,
+      "width": 1.96,
+      "height": 1.785,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 2.693,
+        "y": 1.552,
+        "z": 4.445
+      },
+      "is_locked": true
+    },
+    {
+      "id": "m_81",
+      "name": "Equipment_081",
+      "length": 1.947,
+      "width": 1.286,
+      "height": 4.194,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 11.295,
+        "y": 6.538,
+        "z": 4.164
+      },
+      "is_locked": true
+    },
+    {
+      "id": "m_82",
+      "name": "Equipment_082",
+      "length": 2.446,
+      "width": 2.346,
+      "height": 1.78,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 0,
+        "y": 16.092,
+        "z": 5.522
+      },
+      "is_locked": true
+    },
+    {
+      "id": "m_83",
+      "name": "Equipment_083",
+      "length": 2.346,
+      "width": 2.446,
+      "height": 1.78,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 4.222,
+        "y": 15.839,
+        "z": 2.125
+      },
+      "is_locked": true
+    },
+    {
+      "id": "m_84",
+      "name": "Equipment_084",
+      "length": 2.346,
+      "width": 2.446,
+      "height": 1.78,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 6.845,
+        "y": 15.839,
+        "z": 2.125
+      },
+      "is_locked": true
+    },
+    {
+      "id": "m_85",
+      "name": "Equipment_085",
+      "length": 2.62,
+      "width": 4.965,
+      "height": 0.785,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 1.779,
+        "y": 13.762,
+        "z": 7.402
+      },
+      "is_locked": true
+    },
+    {
+      "id": "m_86",
+      "name": "Equipment_086",
+      "length": 3.308,
+      "width": 3.901,
+      "height": 0.781,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 0,
+        "y": 15.346,
+        "z": 5.974
+      },
+      "is_locked": true
+    },
+    {
+      "id": "m_87",
+      "name": "Equipment_087",
+      "length": 2.232,
+      "width": 7.57,
+      "height": 0.57,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 2.381,
+        "y": 1.817,
+        "z": 7.335
+      },
+      "is_locked": true
+    },
+    {
+      "id": "m_88",
+      "name": "Equipment_088",
+      "length": 3.937,
+      "width": 1.215,
+      "height": 1.917,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 9.614,
+        "y": 12.637,
+        "z": 5.715
+      },
+      "is_locked": true
+    },
+    {
+      "id": "m_89",
+      "name": "Equipment_089",
+      "length": 3.42,
+      "width": 5.094,
+      "height": 0.519,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 9.227,
+        "y": 1.698,
+        "z": 1.966
+      },
+      "is_locked": true
+    },
+    {
+      "id": "m_90",
+      "name": "Equipment_090",
+      "length": 7.575,
+      "width": 3.88,
+      "height": 0.3,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 5.521,
+        "y": 2.657,
+        "z": 4.185
+      },
+      "is_locked": true
+    },
+    {
+      "id": "m_91",
+      "name": "Equipment_091",
+      "length": 0.568,
+      "width": 7.814,
+      "height": 1.971,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 2.31,
+        "y": 5.364,
+        "z": 2.375
+      },
+      "is_locked": true
+    },
+    {
+      "id": "m_92",
+      "name": "Equipment_092",
+      "length": 0.822,
+      "width": 8.0,
+      "height": 1.31,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 12.338,
+        "y": 6.769,
+        "z": 1.778
+      },
+      "is_locked": true
+    },
+    {
+      "id": "m_93",
+      "name": "Equipment_093",
+      "length": 1.902,
+      "width": 0.952,
+      "height": 4.45,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 11.374,
+        "y": 12.509,
+        "z": 4.164
+      },
+      "is_locked": true
+    },
+    {
+      "id": "m_94",
+      "name": "Equipment_094",
+      "length": 2.953,
+      "width": 1.314,
+      "height": 2.074,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 10.293,
+        "y": 2.06,
+        "z": 3.955
+      },
+      "is_locked": true
+    },
+    {
+      "id": "m_95",
+      "name": "Equipment_095",
+      "length": 5.375,
+      "width": 2.054,
+      "height": 0.72,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 5.695,
+        "y": 12.17,
+        "z": 1.607
+      },
+      "is_locked": true
+    },
+    {
+      "id": "m_96",
+      "name": "Equipment_096",
+      "length": 0.568,
+      "width": 7.195,
+      "height": 1.921,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 2.31,
+        "y": 4.664,
+        "z": 2.375
+      },
+      "is_locked": true
+    },
+    {
+      "id": "m_97",
+      "name": "Equipment_097",
+      "length": 0.568,
+      "width": 12.359,
+      "height": 1.112,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 2.31,
+        "y": 5.714,
+        "z": 1.373
+      },
+      "is_locked": true
+    },
+    {
+      "id": "m_98",
+      "name": "Equipment_098",
+      "length": 2.579,
+      "width": 1.098,
+      "height": 2.534,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 10.646,
+        "y": 0.912,
+        "z": 5.044
+      },
+      "is_locked": true
+    },
+    {
+      "id": "m_99",
+      "name": "Equipment_099",
+      "length": 1.114,
+      "width": 2.378,
+      "height": 2.688,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 1.393,
+        "y": 7.727,
+        "z": 4.953
+      },
+      "is_locked": true
+    },
+    {
+      "id": "m_100",
+      "name": "Equipment_100",
+      "length": 1.114,
+      "width": 2.378,
+      "height": 2.688,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 12.583,
+        "y": 9.894,
+        "z": 1.854
+      },
+      "is_locked": true
+    },
+    {
+      "id": "m_101",
+      "name": "Equipment_101",
+      "length": 5.661,
+      "width": 1.19,
+      "height": 1.037,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 6.288,
+        "y": 1.927,
+        "z": 7.144
+      },
+      "is_locked": true
+    },
+    {
+      "id": "m_102",
+      "name": "Equipment_102",
+      "length": 2.34,
+      "width": 1.429,
+      "height": 2.038,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 6.503,
+        "y": 0.342,
+        "z": 5.383
+      },
+      "is_locked": true
+    },
+    {
+      "id": "m_103",
+      "name": "Equipment_103",
+      "length": 1.505,
+      "width": 2.01,
+      "height": 2.2,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 11.665,
+        "y": 17.185,
+        "z": 5.222
+      },
+      "is_locked": true
+    },
+    {
+      "id": "m_104",
+      "name": "Equipment_104",
+      "length": 3.322,
+      "width": 0.992,
+      "height": 2.013,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 7.33,
+        "y": 8.36,
+        "z": 1.605
+      },
+      "is_locked": true
+    },
+    {
+      "id": "m_105",
+      "name": "Equipment_105",
+      "length": 4.148,
+      "width": 3.482,
+      "height": 0.456,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 1.78,
+        "y": 2.46,
+        "z": 7.36
+      },
+      "is_locked": true
+    },
+    {
+      "id": "m_106",
+      "name": "Equipment_106",
+      "length": 3.767,
+      "width": 1.028,
+      "height": 1.682,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 9.785,
+        "y": 12.637,
+        "z": 5.815
+      },
+      "is_locked": true
+    },
+    {
+      "id": "m_107",
+      "name": "Equipment_107",
+      "length": 5.268,
+      "width": 1.19,
+      "height": 1.036,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 6.806,
+        "y": 1.927,
+        "z": 7.144
+      },
+      "is_locked": true
+    },
+    {
+      "id": "m_108",
+      "name": "Equipment_108",
+      "length": 2.244,
+      "width": 3.791,
+      "height": 0.751,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 0,
+        "y": 15.456,
+        "z": 6.124
+      },
+      "is_locked": true
+    },
+    {
+      "id": "m_109",
+      "name": "Equipment_109",
+      "length": 0.485,
+      "width": 11.555,
+      "height": 1.0,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 2.888,
+        "y": 1.707,
+        "z": 1.155
+      },
+      "is_locked": true
+    },
+    {
+      "id": "m_110",
+      "name": "Equipment_110",
+      "length": 0.715,
+      "width": 2.562,
+      "height": 2.99,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 2.2,
+        "y": 2.19,
+        "z": 4.294
+      },
+      "is_locked": true
+    },
+    {
+      "id": "m_111",
+      "name": "Equipment_111",
+      "length": 0.203,
+      "width": 3.463,
+      "height": 7.45,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 13.61,
+        "y": 5.064,
+        "z": 0.664
+      },
+      "is_locked": true
+    },
+    {
+      "id": "m_112",
+      "name": "Equipment_112",
+      "length": 3.968,
+      "width": 1.5,
+      "height": 0.868,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 4.755,
+        "y": 2.932,
+        "z": 6.844
+      },
+      "is_locked": true
+    },
+    {
+      "id": "m_113",
+      "name": "Equipment_113",
+      "length": 7.753,
+      "width": 4.75,
+      "height": 0.14,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 5.267,
+        "y": 3.107,
+        "z": 1.795
+      },
+      "is_locked": true
+    },
+    {
+      "id": "m_114",
+      "name": "Equipment_114",
+      "length": 4.512,
+      "width": 0.508,
+      "height": 2.177,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 5.101,
+        "y": 0.334,
+        "z": 5.383
+      },
+      "is_locked": true
+    },
+    {
+      "id": "m_115",
+      "name": "Equipment_115",
+      "length": 0.665,
+      "width": 6.931,
+      "height": 1.065,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 12.57,
+        "y": 5.599,
+        "z": 1.913
+      },
+      "is_locked": true
+    },
+    {
+      "id": "m_116",
+      "name": "Equipment_116",
+      "length": 1.053,
+      "width": 1.945,
+      "height": 2.189,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 4.225,
+        "y": 2.487,
+        "z": 5.432
+      },
+      "is_locked": true
+    },
+    {
+      "id": "m_117",
+      "name": "Equipment_117",
+      "length": 1.34,
+      "width": 2.73,
+      "height": 1.218,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 6.388,
+        "y": 12.787,
+        "z": 0.057
+      },
+      "is_locked": true
+    },
+    {
+      "id": "m_118",
+      "name": "Equipment_118",
+      "length": 2.29,
+      "width": 1.272,
+      "height": 1.521,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 4.433,
+        "y": 3.685,
+        "z": 5.321
+      },
+      "is_locked": true
+    },
+    {
+      "id": "m_119",
+      "name": "Equipment_119",
+      "length": 0.744,
+      "width": 4.695,
+      "height": 1.21,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 2.205,
+        "y": 2.55,
+        "z": 1.285
+      },
+      "is_locked": true
+    },
+    {
+      "id": "m_120",
+      "name": "Equipment_120",
+      "length": 2.659,
+      "width": 1.385,
+      "height": 1.115,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 9.242,
+        "y": 1.454,
+        "z": 1.701
+      },
+      "is_locked": true
+    },
+    {
+      "id": "m_121",
+      "name": "Equipment_121",
+      "length": 0.944,
+      "width": 4.515,
+      "height": 0.96,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 2.328,
+        "y": 13.012,
+        "z": 1.155
+      },
+      "is_locked": true
+    },
+    {
+      "id": "m_122",
+      "name": "Equipment_122",
+      "length": 5.679,
+      "width": 0.331,
+      "height": 2.163,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 5.32,
+        "y": 11.649,
+        "z": 1.732
+      },
+      "is_locked": true
+    },
+    {
+      "id": "m_123",
+      "name": "Equipment_123",
+      "length": 1.694,
+      "width": 1.169,
+      "height": 1.918,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 3.689,
+        "y": 0.607,
+        "z": 5.422
+      },
+      "is_locked": true
+    },
+    {
+      "id": "m_124",
+      "name": "Equipment_124",
+      "length": 1.077,
+      "width": 1.68,
+      "height": 2.089,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 10.11,
+        "y": 1.759,
+        "z": 4.152
+      },
+      "is_locked": true
+    },
+    {
+      "id": "m_125",
+      "name": "Equipment_125",
+      "length": 1.34,
+      "width": 1.463,
+      "height": 1.925,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 6.395,
+        "y": 1.774,
+        "z": 5.389
+      },
+      "is_locked": true
+    },
+    {
+      "id": "m_126",
+      "name": "Equipment_126",
+      "length": 1.942,
+      "width": 1.53,
+      "height": 1.22,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 6.837,
+        "y": 4.062,
+        "z": 6.319
+      },
+      "is_locked": true
+    },
+    {
+      "id": "m_127",
+      "name": "Equipment_127",
+      "length": 1.507,
+      "width": 1.01,
+      "height": 2.35,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 9.285,
+        "y": 14.477,
+        "z": 5.172
+      },
+      "is_locked": true
+    },
+    {
+      "id": "m_128",
+      "name": "Equipment_128",
+      "length": 0.821,
+      "width": 3.653,
+      "height": 1.149,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 2.191,
+        "y": 13.475,
+        "z": 1.284
+      },
+      "is_locked": true
+    },
+    {
+      "id": "m_129",
+      "name": "Equipment_129",
+      "length": 1.83,
+      "width": 1.46,
+      "height": 1.25,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 6.564,
+        "y": 14.534,
+        "z": 2.124
+      },
+      "is_locked": true
+    },
+    {
+      "id": "m_130",
+      "name": "Equipment_130",
+      "length": 1.83,
+      "width": 1.46,
+      "height": 1.25,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 3.358,
+        "y": 14.532,
+        "z": 2.123
+      },
+      "is_locked": true
+    },
+    {
+      "id": "m_131",
+      "name": "Equipment_131",
+      "length": 0.45,
+      "width": 8.104,
+      "height": 0.868,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 12.395,
+        "y": 3.706,
+        "z": 1.142
+      },
+      "is_locked": true
+    },
+    {
+      "id": "m_132",
+      "name": "Equipment_132",
+      "length": 1.62,
+      "width": 0.723,
+      "height": 2.63,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 6.093,
+        "y": 1.784,
+        "z": 4.125
+      },
+      "is_locked": true
+    },
+    {
+      "id": "m_133",
+      "name": "Equipment_133",
+      "length": 0.958,
+      "width": 1.112,
+      "height": 2.84,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 10.679,
+        "y": 10.068,
+        "z": 8.068
+      },
+      "is_locked": true
+    },
+    {
+      "id": "m_134",
+      "name": "Equipment_134",
+      "length": 1.01,
+      "width": 1.271,
+      "height": 2.35,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 2.507,
+        "y": 17.969,
+        "z": 5.13
+      },
+      "is_locked": true
+    },
+    {
+      "id": "m_135",
+      "name": "Equipment_135",
+      "length": 0.494,
+      "width": 8.209,
+      "height": 0.739,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 12.553,
+        "y": 3.184,
+        "z": 1.165
+      },
+      "is_locked": true
+    },
+    {
+      "id": "m_136",
+      "name": "Equipment_136",
+      "length": 2.292,
+      "width": 0.54,
+      "height": 2.392,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 6.15,
+        "y": 8.36,
+        "z": 1.633
+      },
+      "is_locked": true
+    },
+    {
+      "id": "m_137",
+      "name": "Equipment_137",
+      "length": 1.452,
+      "width": 0.698,
+      "height": 2.918,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 10.292,
+        "y": 1.51,
+        "z": 4.125
+      },
+      "is_locked": true
+    },
+    {
+      "id": "m_138",
+      "name": "Equipment_138",
+      "length": 5.093,
+      "width": 0.223,
+      "height": 2.536,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 5.32,
+        "y": 7.434,
+        "z": 1.893
+      },
+      "is_locked": true
+    },
+    {
+      "id": "m_139",
+      "name": "Equipment_139",
+      "length": 0.322,
+      "width": 8.525,
+      "height": 0.973,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 3.224,
+        "y": 2.304,
+        "z": 1.155
+      },
+      "is_locked": true
+    },
+    {
+      "id": "m_140",
+      "name": "Equipment_140",
+      "length": 9.386,
+      "width": 0.545,
+      "height": 0.52,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 3.812,
+        "y": 3.497,
+        "z": 4.155
+      },
+      "is_locked": true
+    },
+    {
+      "id": "m_141",
+      "name": "Equipment_141",
+      "length": 2.539,
+      "width": 0.499,
+      "height": 2.028,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 9.361,
+        "y": 1.454,
+        "z": 2.819
+      },
+      "is_locked": true
+    },
+    {
+      "id": "m_142",
+      "name": "Equipment_142",
+      "length": 0.585,
+      "width": 3.277,
+      "height": 1.312,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 2.31,
+        "y": 6.076,
+        "z": 2.095
+      },
+      "is_locked": true
+    },
+    {
+      "id": "m_143",
+      "name": "Equipment_143",
+      "length": 1.147,
+      "width": 1.317,
+      "height": 1.647,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 3.756,
+        "y": 1.477,
+        "z": 2.125
+      },
+      "is_locked": true
+    },
+    {
+      "id": "m_144",
+      "name": "Equipment_144",
+      "length": 1.147,
+      "width": 1.317,
+      "height": 1.647,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 3.856,
+        "y": 3.554,
+        "z": 2.125
+      },
+      "is_locked": true
+    },
+    {
+      "id": "m_145",
+      "name": "Equipment_145",
+      "length": 1.15,
+      "width": 0.412,
+      "height": 5.192,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 5.835,
+        "y": 4.527,
+        "z": 1.955
+      },
+      "is_locked": true
+    },
+    {
+      "id": "m_146",
+      "name": "Equipment_146",
+      "length": 1.236,
+      "width": 1.96,
+      "height": 1.0,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 2.264,
+        "y": 11.762,
+        "z": 1.615
+      },
+      "is_locked": true
+    },
+    {
+      "id": "m_147",
+      "name": "Equipment_147",
+      "length": 0.892,
+      "width": 1.052,
+      "height": 2.558,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 2.806,
+        "y": 2.417,
+        "z": 4.48
+      },
+      "is_locked": true
+    },
+    {
+      "id": "m_148",
+      "name": "Equipment_148",
+      "length": 9.531,
+      "width": 0.469,
+      "height": 0.517,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 3.66,
+        "y": 3.325,
+        "z": 4.14
+      },
+      "is_locked": true
+    },
+    {
+      "id": "m_149",
+      "name": "Equipment_149",
+      "length": 0.681,
+      "width": 4.154,
+      "height": 0.811,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 2.471,
+        "y": 1.892,
+        "z": 1.63
+      },
+      "is_locked": true
+    },
+    {
+      "id": "m_150",
+      "name": "Equipment_150",
+      "length": 1.127,
+      "width": 1.6,
+      "height": 1.223,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 10.11,
+        "y": 1.839,
+        "z": 4.732
+      },
+      "is_locked": true
+    },
+    {
+      "id": "m_151",
+      "name": "Equipment_151",
+      "length": 0.279,
+      "width": 8.383,
+      "height": 0.935,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 3.391,
+        "y": 1.906,
+        "z": 1.115
+      },
+      "is_locked": true
+    },
+    {
+      "id": "m_152",
+      "name": "Equipment_152",
+      "length": 1.643,
+      "width": 3.478,
+      "height": 0.365,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 2.303,
+        "y": 10.291,
+        "z": 1.663
+      },
+      "is_locked": true
+    },
+    {
+      "id": "m_153",
+      "name": "Equipment_153",
+      "length": 0.568,
+      "width": 1.585,
+      "height": 2.281,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 2.31,
+        "y": 2.564,
+        "z": 2.375
+      },
+      "is_locked": true
+    }
+  ],
+  "no_go_zones": [],
+  "walking_spaces": [],
+  "routing_trays": [],
+  "pipes": []
+}
