@@ -23,18 +23,20 @@ def deserialize_state(json_str):
     
     machinery_list = []
     for m in data.get("machinery_list", []):
-        pos_data = m.pop("position")
+        pos_data = m.pop("position", None)
         pos = Position(**pos_data) if pos_data else None
         machinery_list.append(Machinery(**m, position=pos))
         
     pipe_list = []
-    for p in data.get("pipe_list", []):
-        start_data = p.pop("start")
-        end_data = p.pop("end")
-        path_data = p.pop("path")
+    # Support both 'pipe_list' and 'pipes' key
+    raw_pipes = data.get("pipe_list") or data.get("pipes", [])
+    for p in raw_pipes:
+        start_data = p.pop("start", None)
+        end_data = p.pop("end", None)
+        path_data = p.pop("path", None)
         
-        start = Position(**start_data)
-        end = Position(**end_data)
+        start = Position(**start_data) if start_data else None
+        end = Position(**end_data) if end_data else None
         path = [Position(**pt) for pt in path_data] if path_data else None
         
         pipe_list.append(Pipe(**p, start=start, end=end, path=path))

@@ -172,6 +172,7 @@ def main():
             "priority":     idx + 1,
             "pipe_type":    "Closed",
             "suction_type": "Pressurised",
+            "path":         None,
             "pipe_content": PIPE_CONTENT.get(sid, "General Fluid"),
         }
         pipes.append(pipe_entry)
@@ -204,7 +205,7 @@ def main():
     print("\n  To use in the tool:")
     print("  1. Load er_552205_project.json as the project")
     print("  2. Open er_552205_pipes.json and copy the pipes array")
-    print("     into the project JSON under the 'pipes' key, OR")
+    print("     into the project JSON under the 'pipe_list' key, OR")
     print("     add each pipe manually via the sidebar using the")
     print("     start/end coordinates in er_552205_pipe_endpoints.txt")
 

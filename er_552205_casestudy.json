@@ -1,0 +1,1209 @@
+{
+  "room": {
+    "length": 14.602,
+    "width": 19.734,
+    "height": 11.215
+  },
+  "machinery_list": [
+    {
+      "id": "mach_0000",
+      "name": "Main Engine SB 1",
+      "length": 4.32,
+      "width": 5.4,
+      "height": 3.039,
+      "machine_type": "Hot Surface",
+      "constraint": "floor",
+      "position": {
+        "x": 6.932,
+        "y": 2.337,
+        "z": 1.615
+      },
+      "is_locked": true
+    },
+    {
+      "id": "mach_0001",
+      "name": "Main Engine SB 2",
+      "length": 4.144,
+      "width": 3.158,
+      "height": 4.29,
+      "machine_type": "Hot Surface",
+      "constraint": "floor",
+      "position": {
+        "x": 7.184,
+        "y": 1.552,
+        "z": 3.015
+      },
+      "is_locked": true
+    },
+    {
+      "id": "mach_0002",
+      "name": "Main Engine PS 1",
+      "length": 5.497,
+      "width": 2.05,
+      "height": 3.542,
+      "machine_type": "Hot Surface",
+      "constraint": "floor",
+      "position": {
+        "x": 2.931,
+        "y": 2.102,
+        "z": 2.094
+      },
+      "is_locked": true
+    },
+    {
+      "id": "mach_0003",
+      "name": "Main Engine SB 3",
+      "length": 5.665,
+      "width": 1.815,
+      "height": 2.713,
+      "machine_type": "Hot Surface",
+      "constraint": "floor",
+      "position": {
+        "x": 5.319,
+        "y": 11.649,
+        "z": 1.732
+      },
+      "is_locked": true
+    },
+    {
+      "id": "mach_0004",
+      "name": "Main Switchboard 1",
+      "length": 4.512,
+      "width": 0.508,
+      "height": 2.177,
+      "machine_type": "Switchboard",
+      "constraint": "floor",
+      "position": {
+        "x": 5.1,
+        "y": 0.334,
+        "z": 5.383
+      },
+      "is_locked": true
+    },
+    {
+      "id": "mach_0005",
+      "name": "Main Switchboard 2",
+      "length": 1.15,
+      "width": 0.412,
+      "height": 5.192,
+      "machine_type": "Switchboard",
+      "constraint": "floor",
+      "position": {
+        "x": 5.835,
+        "y": 4.527,
+        "z": 1.955
+      },
+      "is_locked": true
+    },
+    {
+      "id": "mach_0006",
+      "name": "Generator Set SB 1",
+      "length": 3.571,
+      "width": 4.457,
+      "height": 1.432,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 8.041,
+        "y": 4.307,
+        "z": 1.605
+      },
+      "is_locked": true
+    },
+    {
+      "id": "mach_0007",
+      "name": "Generator Set PS 1",
+      "length": 3.742,
+      "width": 2.67,
+      "height": 2.07,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 5.1,
+        "y": 0.592,
+        "z": 5.675
+      },
+      "is_locked": true
+    },
+    {
+      "id": "mach_0008",
+      "name": "Generator Set SB 2",
+      "length": 2.058,
+      "width": 4.093,
+      "height": 2.38,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 10.411,
+        "y": 2.766,
+        "z": 5.978
+      },
+      "is_locked": true
+    },
+    {
+      "id": "mach_0009",
+      "name": "Generator Set PS 2",
+      "length": 4.137,
+      "width": 1.322,
+      "height": 3.462,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 2.235,
+        "y": 1.76,
+        "z": 4.354
+      },
+      "is_locked": true
+    },
+    {
+      "id": "mach_0010",
+      "name": "Generator Set PS 3",
+      "length": 3.705,
+      "width": 3.454,
+      "height": 0.972,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 1.795,
+        "y": 2.34,
+        "z": 6.845
+      },
+      "is_locked": true
+    },
+    {
+      "id": "mach_0011",
+      "name": "Pump / Heat Exch 01",
+      "length": 4.053,
+      "width": 0.798,
+      "height": 3.405,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 9.005,
+        "y": 1.212,
+        "z": 4.173
+      },
+      "is_locked": true
+    },
+    {
+      "id": "mach_0012",
+      "name": "Generator Set SB 3",
+      "length": 1.947,
+      "width": 1.286,
+      "height": 4.194,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 11.294,
+        "y": 6.538,
+        "z": 4.164
+      },
+      "is_locked": true
+    },
+    {
+      "id": "mach_0013",
+      "name": "Generator Set PS 4",
+      "length": 2.446,
+      "width": 2.346,
+      "height": 1.78,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 0.0,
+        "y": 16.092,
+        "z": 5.522
+      },
+      "is_locked": true
+    },
+    {
+      "id": "mach_0014",
+      "name": "Generator Set PS 5",
+      "length": 2.346,
+      "width": 2.446,
+      "height": 1.78,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 4.222,
+        "y": 15.839,
+        "z": 2.125
+      },
+      "is_locked": true
+    },
+    {
+      "id": "mach_0015",
+      "name": "Generator Set SB 4",
+      "length": 2.346,
+      "width": 2.446,
+      "height": 1.78,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 6.845,
+        "y": 15.839,
+        "z": 2.125
+      },
+      "is_locked": true
+    },
+    {
+      "id": "mach_0016",
+      "name": "Pump / Heat Exch 02",
+      "length": 3.308,
+      "width": 3.901,
+      "height": 0.781,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 0.0,
+        "y": 15.346,
+        "z": 5.974
+      },
+      "is_locked": true
+    },
+    {
+      "id": "mach_0017",
+      "name": "Generator Set SB 5",
+      "length": 3.937,
+      "width": 1.215,
+      "height": 1.917,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 9.613,
+        "y": 12.637,
+        "z": 5.715
+      },
+      "is_locked": true
+    },
+    {
+      "id": "mach_0018",
+      "name": "Generator Set SB 6",
+      "length": 1.902,
+      "width": 0.952,
+      "height": 4.45,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 11.374,
+        "y": 12.509,
+        "z": 4.164
+      },
+      "is_locked": true
+    },
+    {
+      "id": "mach_0019",
+      "name": "Generator Set SB 7",
+      "length": 2.953,
+      "width": 1.314,
+      "height": 2.074,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 10.292,
+        "y": 2.06,
+        "z": 3.955
+      },
+      "is_locked": true
+    },
+    {
+      "id": "mach_0020",
+      "name": "Generator Set SB 8",
+      "length": 2.579,
+      "width": 1.098,
+      "height": 2.534,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 10.645,
+        "y": 0.912,
+        "z": 5.044
+      },
+      "is_locked": true
+    },
+    {
+      "id": "mach_0021",
+      "name": "Generator Set PS 6",
+      "length": 1.114,
+      "width": 2.378,
+      "height": 2.688,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 1.393,
+        "y": 7.727,
+        "z": 4.953
+      },
+      "is_locked": true
+    },
+    {
+      "id": "mach_0022",
+      "name": "Generator Set SB 9",
+      "length": 1.114,
+      "width": 2.378,
+      "height": 2.688,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 12.583,
+        "y": 9.894,
+        "z": 1.854
+      },
+      "is_locked": true
+    },
+    {
+      "id": "mach_0023",
+      "name": "Generator Set SB 10",
+      "length": 2.34,
+      "width": 1.429,
+      "height": 2.038,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 6.502,
+        "y": 0.342,
+        "z": 5.383
+      },
+      "is_locked": true
+    },
+    {
+      "id": "mach_0024",
+      "name": "Generator Set SB 11",
+      "length": 1.505,
+      "width": 2.01,
+      "height": 2.2,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 11.665,
+        "y": 17.185,
+        "z": 5.222
+      },
+      "is_locked": true
+    },
+    {
+      "id": "mach_0025",
+      "name": "Generator Set SB 12",
+      "length": 3.322,
+      "width": 0.992,
+      "height": 2.013,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 7.33,
+        "y": 8.36,
+        "z": 1.605
+      },
+      "is_locked": true
+    },
+    {
+      "id": "mach_0026",
+      "name": "Pump / Heat Exch 03",
+      "length": 0.715,
+      "width": 2.562,
+      "height": 2.99,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 2.2,
+        "y": 2.19,
+        "z": 4.294
+      },
+      "is_locked": true
+    },
+    {
+      "id": "mach_0027",
+      "name": "Pump / Heat Exch 04",
+      "length": 3.968,
+      "width": 1.5,
+      "height": 0.868,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 4.754,
+        "y": 2.932,
+        "z": 6.844
+      },
+      "is_locked": true
+    },
+    {
+      "id": "mach_0028",
+      "name": "Pump / Heat Exch 05",
+      "length": 1.053,
+      "width": 1.945,
+      "height": 2.189,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 4.224,
+        "y": 2.487,
+        "z": 5.432
+      },
+      "is_locked": true
+    },
+    {
+      "id": "mach_0029",
+      "name": "Pump / Heat Exch 06",
+      "length": 1.34,
+      "width": 2.73,
+      "height": 1.218,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 6.387,
+        "y": 12.787,
+        "z": 0.057
+      },
+      "is_locked": true
+    },
+    {
+      "id": "mach_0030",
+      "name": "Pump / Heat Exch 07",
+      "length": 2.29,
+      "width": 1.272,
+      "height": 1.521,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 4.432,
+        "y": 3.685,
+        "z": 5.321
+      },
+      "is_locked": true
+    },
+    {
+      "id": "mach_0031",
+      "name": "Pump / Heat Exch 08",
+      "length": 2.659,
+      "width": 1.385,
+      "height": 1.115,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 9.241,
+        "y": 1.454,
+        "z": 1.701
+      },
+      "is_locked": true
+    },
+    {
+      "id": "mach_0032",
+      "name": "Pump / Heat Exch 09",
+      "length": 1.694,
+      "width": 1.169,
+      "height": 1.918,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 3.689,
+        "y": 0.607,
+        "z": 5.422
+      },
+      "is_locked": true
+    },
+    {
+      "id": "mach_0033",
+      "name": "Pump / Heat Exch 10",
+      "length": 1.34,
+      "width": 1.463,
+      "height": 1.925,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 6.395,
+        "y": 1.774,
+        "z": 5.389
+      },
+      "is_locked": true
+    },
+    {
+      "id": "mach_0034",
+      "name": "Pump / Heat Exch 11",
+      "length": 1.942,
+      "width": 1.53,
+      "height": 1.22,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 6.837,
+        "y": 4.062,
+        "z": 6.319
+      },
+      "is_locked": true
+    },
+    {
+      "id": "mach_0035",
+      "name": "Pump / Heat Exch 12",
+      "length": 1.507,
+      "width": 1.01,
+      "height": 2.35,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 9.285,
+        "y": 14.477,
+        "z": 5.172
+      },
+      "is_locked": true
+    },
+    {
+      "id": "mach_0036",
+      "name": "Pump / Heat Exch 13",
+      "length": 0.821,
+      "width": 3.653,
+      "height": 1.149,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 2.191,
+        "y": 13.475,
+        "z": 1.284
+      },
+      "is_locked": true
+    },
+    {
+      "id": "mach_0037",
+      "name": "Pump / Heat Exch 14",
+      "length": 1.83,
+      "width": 1.46,
+      "height": 1.25,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 6.564,
+        "y": 14.534,
+        "z": 2.124
+      },
+      "is_locked": true
+    },
+    {
+      "id": "mach_0038",
+      "name": "Pump / Heat Exch 15",
+      "length": 1.83,
+      "width": 1.46,
+      "height": 1.25,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 3.357,
+        "y": 14.532,
+        "z": 2.123
+      },
+      "is_locked": true
+    },
+    {
+      "id": "mach_0039",
+      "name": "Pump / Heat Exch 16",
+      "length": 0.958,
+      "width": 1.112,
+      "height": 2.84,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 10.678,
+        "y": 10.068,
+        "z": 8.068
+      },
+      "is_locked": true
+    },
+    {
+      "id": "mach_0040",
+      "name": "Pump / Heat Exch 17",
+      "length": 1.01,
+      "width": 1.271,
+      "height": 2.35,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 2.507,
+        "y": 17.969,
+        "z": 5.13
+      },
+      "is_locked": true
+    },
+    {
+      "id": "mach_0041",
+      "name": "Pump / Heat Exch 18",
+      "length": 2.292,
+      "width": 0.54,
+      "height": 2.392,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 6.149,
+        "y": 8.36,
+        "z": 1.633
+      },
+      "is_locked": true
+    },
+    {
+      "id": "mach_0042",
+      "name": "Pump / Heat Exch 19",
+      "length": 0.585,
+      "width": 3.277,
+      "height": 1.312,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 2.309,
+        "y": 6.076,
+        "z": 2.095
+      },
+      "is_locked": true
+    },
+    {
+      "id": "mach_0043",
+      "name": "Pump / Heat Exch 20",
+      "length": 1.147,
+      "width": 1.317,
+      "height": 1.647,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 3.855,
+        "y": 3.554,
+        "z": 2.125
+      },
+      "is_locked": true
+    },
+    {
+      "id": "mach_0044",
+      "name": "Pump / Heat Exch 21",
+      "length": 1.236,
+      "width": 1.96,
+      "height": 1.0,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 2.263,
+        "y": 11.762,
+        "z": 1.615
+      },
+      "is_locked": true
+    },
+    {
+      "id": "mach_0045",
+      "name": "Pump / Heat Exch 22",
+      "length": 0.892,
+      "width": 1.052,
+      "height": 2.558,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 2.806,
+        "y": 2.417,
+        "z": 4.48
+      },
+      "is_locked": true
+    },
+    {
+      "id": "mach_0046",
+      "name": "Pump / Heat Exch 23",
+      "length": 0.681,
+      "width": 4.154,
+      "height": 0.811,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 2.471,
+        "y": 1.892,
+        "z": 1.63
+      },
+      "is_locked": true
+    },
+    {
+      "id": "mach_0047",
+      "name": "Pump / Heat Exch 24",
+      "length": 1.127,
+      "width": 1.6,
+      "height": 1.223,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 10.11,
+        "y": 1.839,
+        "z": 4.732
+      },
+      "is_locked": true
+    },
+    {
+      "id": "mach_0048",
+      "name": "Pump / Heat Exch 25",
+      "length": 1.643,
+      "width": 3.478,
+      "height": 0.365,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 2.302,
+        "y": 10.291,
+        "z": 1.663
+      },
+      "is_locked": true
+    },
+    {
+      "id": "mach_0049",
+      "name": "Filter / Sep 01",
+      "length": 0.55,
+      "width": 0.93,
+      "height": 3.877,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 8.502,
+        "y": 2.337,
+        "z": 2.318
+      },
+      "is_locked": true
+    },
+    {
+      "id": "mach_0050",
+      "name": "Filter / Sep 02",
+      "length": 1.535,
+      "width": 1.245,
+      "height": 0.995,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 5.232,
+        "y": 14.749,
+        "z": 2.126
+      },
+      "is_locked": true
+    },
+    {
+      "id": "mach_0051",
+      "name": "Filter / Sep 03",
+      "length": 3.671,
+      "width": 0.833,
+      "height": 0.595,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 3.701,
+        "y": 1.784,
+        "z": 4.085
+      },
+      "is_locked": true
+    },
+    {
+      "id": "mach_0052",
+      "name": "Filter / Sep 04",
+      "length": 1.128,
+      "width": 0.755,
+      "height": 2.132,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 6.803,
+        "y": 3.573,
+        "z": 2.081
+      },
+      "is_locked": true
+    },
+    {
+      "id": "mach_0053",
+      "name": "Filter / Sep 05",
+      "length": 0.675,
+      "width": 2.307,
+      "height": 1.15,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 2.325,
+        "y": 6.033,
+        "z": 1.63
+      },
+      "is_locked": true
+    },
+    {
+      "id": "mach_0054",
+      "name": "Filter / Sep 06",
+      "length": 0.547,
+      "width": 2.042,
+      "height": 1.532,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 1.559,
+        "y": 3.046,
+        "z": 5.299
+      },
+      "is_locked": true
+    },
+    {
+      "id": "mach_0055",
+      "name": "Filter / Sep 07",
+      "length": 2.042,
+      "width": 0.547,
+      "height": 1.532,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 3.231,
+        "y": 12.551,
+        "z": 5.974
+      },
+      "is_locked": true
+    },
+    {
+      "id": "mach_0056",
+      "name": "Filter / Sep 08",
+      "length": 2.042,
+      "width": 0.547,
+      "height": 1.532,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 10.464,
+        "y": 2.946,
+        "z": 5.799
+      },
+      "is_locked": true
+    },
+    {
+      "id": "mach_0057",
+      "name": "Filter / Sep 09",
+      "length": 2.042,
+      "width": 0.547,
+      "height": 1.532,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 5.031,
+        "y": 2.146,
+        "z": 2.949
+      },
+      "is_locked": true
+    },
+    {
+      "id": "mach_0058",
+      "name": "Filter / Sep 10",
+      "length": 0.547,
+      "width": 2.042,
+      "height": 1.532,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 2.208,
+        "y": 15.421,
+        "z": 2.699
+      },
+      "is_locked": true
+    },
+    {
+      "id": "mach_0059",
+      "name": "Filter / Sep 11",
+      "length": 0.818,
+      "width": 0.654,
+      "height": 3.114,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 7.884,
+        "y": 2.327,
+        "z": 2.458
+      },
+      "is_locked": true
+    },
+    {
+      "id": "mach_0060",
+      "name": "Filter / Sep 12",
+      "length": 1.08,
+      "width": 1.441,
+      "height": 1.054,
+      "machine_type": "General",
+      "constraint": "floor",
+      "position": {
+        "x": 10.926,
+        "y": 6.545,
+        "z": 5.489
+      },
+      "is_locked": true
+    }
+  ],
+  "pipe_list": [
+    {
+      "id": "pipe_00",
+      "name": "Fuel Oil HFO (132)",
+      "start": {
+        "x": 5.62,
+        "y": 11.06,
+        "z": 1.81
+      },
+      "end": {
+        "x": 7.25,
+        "y": 5.27,
+        "z": 1.82
+      },
+      "diameter": 0.1,
+      "priority": 1,
+      "pipe_type": "Closed",
+      "suction_type": "Pressurised",
+      "path": null,
+      "pipe_content": "Fuel Oil"
+    },
+    {
+      "id": "pipe_01",
+      "name": "Fuel Oil MDO (133)",
+      "start": {
+        "x": 1.94,
+        "y": 7.31,
+        "z": 7.04
+      },
+      "end": {
+        "x": 13.07,
+        "y": 9.54,
+        "z": 3.46
+      },
+      "diameter": 0.1,
+      "priority": 2,
+      "pipe_type": "Closed",
+      "suction_type": "Pressurised",
+      "path": null,
+      "pipe_content": "Fuel Oil"
+    },
+    {
+      "id": "pipe_02",
+      "name": "Fuel Oil Service (141)",
+      "start": {
+        "x": 9.5,
+        "y": 1.28,
+        "z": 1.53
+      },
+      "end": {
+        "x": 4.46,
+        "y": 19.04,
+        "z": 6.49
+      },
+      "diameter": 0.08,
+      "priority": 3,
+      "pipe_type": "Closed",
+      "suction_type": "Pressurised",
+      "path": null,
+      "pipe_content": "Fuel Oil"
+    },
+    {
+      "id": "pipe_03",
+      "name": "Fuel Oil Transfer (154)",
+      "start": {
+        "x": 10.39,
+        "y": 12.67,
+        "z": 5.68
+      },
+      "end": {
+        "x": 9.21,
+        "y": 6.62,
+        "z": 5.81
+      },
+      "diameter": 0.08,
+      "priority": 4,
+      "pipe_type": "Closed",
+      "suction_type": "Pressurised",
+      "path": null,
+      "pipe_content": "Fuel Oil"
+    },
+    {
+      "id": "pipe_04",
+      "name": "Lube Oil (163)",
+      "start": {
+        "x": 11.51,
+        "y": 0.32,
+        "z": 1.28
+      },
+      "end": {
+        "x": 13.09,
+        "y": 19.25,
+        "z": 3.28
+      },
+      "diameter": 0.08,
+      "priority": 5,
+      "pipe_type": "Closed",
+      "suction_type": "Pressurised",
+      "path": null,
+      "pipe_content": "Lube Oil"
+    },
+    {
+      "id": "pipe_05",
+      "name": "Bilge (311)",
+      "start": {
+        "x": 13.18,
+        "y": 14.27,
+        "z": 3.1
+      },
+      "end": {
+        "x": 2.45,
+        "y": 11.49,
+        "z": 2.06
+      },
+      "diameter": 0.1,
+      "priority": 6,
+      "pipe_type": "Closed",
+      "suction_type": "Pressurised",
+      "path": null,
+      "pipe_content": "Bilge"
+    },
+    {
+      "id": "pipe_06",
+      "name": "Bilge Oily Water (312)",
+      "start": {
+        "x": 1.5,
+        "y": 5.0,
+        "z": 0.5
+      },
+      "end": {
+        "x": 12.5,
+        "y": 14.0,
+        "z": 0.5
+      },
+      "diameter": 0.08,
+      "priority": 7,
+      "pipe_type": "Closed",
+      "suction_type": "Pressurised",
+      "path": null,
+      "pipe_content": "Bilge"
+    },
+    {
+      "id": "pipe_07",
+      "name": "Ballast (321)",
+      "start": {
+        "x": 1.91,
+        "y": 4.99,
+        "z": 6.06
+      },
+      "end": {
+        "x": 13.36,
+        "y": 13.74,
+        "z": 2.63
+      },
+      "diameter": 0.15,
+      "priority": 8,
+      "pipe_type": "Closed",
+      "suction_type": "Pressurised",
+      "path": null,
+      "pipe_content": "Ballast"
+    },
+    {
+      "id": "pipe_08",
+      "name": "Sounding / Air Vent (322)",
+      "start": {
+        "x": 10.79,
+        "y": 1.73,
+        "z": 3.23
+      },
+      "end": {
+        "x": 13.36,
+        "y": 14.72,
+        "z": 3.94
+      },
+      "diameter": 0.05,
+      "priority": 9,
+      "pipe_type": "Closed",
+      "suction_type": "Pressurised",
+      "path": null,
+      "pipe_content": "General Fluid"
+    },
+    {
+      "id": "pipe_09",
+      "name": "Fire Fighting Main (331)",
+      "start": {
+        "x": 2.8,
+        "y": 1.94,
+        "z": 6.25
+      },
+      "end": {
+        "x": 12.3,
+        "y": 17.12,
+        "z": 3.25
+      },
+      "diameter": 0.1,
+      "priority": 10,
+      "pipe_type": "Closed",
+      "suction_type": "Pressurised",
+      "path": null,
+      "pipe_content": "Fire Fighting"
+    },
+    {
+      "id": "pipe_10",
+      "name": "Fire Fighting Local (333)",
+      "start": {
+        "x": 9.94,
+        "y": 1.35,
+        "z": 6.64
+      },
+      "end": {
+        "x": 7.75,
+        "y": 14.72,
+        "z": 1.01
+      },
+      "diameter": 0.08,
+      "priority": 11,
+      "pipe_type": "Closed",
+      "suction_type": "Pressurised",
+      "path": null,
+      "pipe_content": "Fire Fighting"
+    },
+    {
+      "id": "pipe_11",
+      "name": "Sea Water Cooling (371)",
+      "start": {
+        "x": 8.94,
+        "y": 2.06,
+        "z": 8.92
+      },
+      "end": {
+        "x": 2.54,
+        "y": 19.38,
+        "z": 6.08
+      },
+      "diameter": 0.15,
+      "priority": 12,
+      "pipe_type": "Closed",
+      "suction_type": "Pressurised",
+      "path": null,
+      "pipe_content": "General Fluid"
+    },
+    {
+      "id": "pipe_12",
+      "name": "Sea Water Cooling Branch (373)",
+      "start": {
+        "x": 2.46,
+        "y": 16.44,
+        "z": 3.46
+      },
+      "end": {
+        "x": 8.78,
+        "y": 0.47,
+        "z": 5.97
+      },
+      "diameter": 0.1,
+      "priority": 13,
+      "pipe_type": "Closed",
+      "suction_type": "Pressurised",
+      "path": null,
+      "pipe_content": "General Fluid"
+    },
+    {
+      "id": "pipe_13",
+      "name": "Overboard / Discharge (380)",
+      "start": {
+        "x": 4.95,
+        "y": 11.62,
+        "z": 1.03
+      },
+      "end": {
+        "x": 7.05,
+        "y": 11.67,
+        "z": 1.03
+      },
+      "diameter": 0.15,
+      "priority": 14,
+      "pipe_type": "Closed",
+      "suction_type": "Pressurised",
+      "path": null,
+      "pipe_content": "General Fluid"
+    }
+  ],
+  "no_go_zones": [],
+  "walking_spaces": [],
+  "routing_trays": []
+}
