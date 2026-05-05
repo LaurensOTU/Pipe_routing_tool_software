@@ -16,9 +16,9 @@
       "position": {
         "x": 6.932,
         "y": 2.337,
-        "z": 0.0
+        "z": 1.615
       },
-      "is_locked": false
+      "is_locked": true
     },
     {
       "id": "mach_0001",
@@ -31,9 +31,9 @@
       "position": {
         "x": 7.184,
         "y": 1.552,
-        "z": 0.0
+        "z": 3.015
       },
-      "is_locked": false
+      "is_locked": true
     },
     {
       "id": "mach_0002",
@@ -46,9 +46,9 @@
       "position": {
         "x": 2.931,
         "y": 2.102,
-        "z": 0.0
+        "z": 2.094
       },
-      "is_locked": false
+      "is_locked": true
     },
     {
       "id": "mach_0003",
@@ -61,24 +61,24 @@
       "position": {
         "x": 5.319,
         "y": 11.649,
-        "z": 0.0
+        "z": 1.732
       },
-      "is_locked": false
+      "is_locked": true
     },
     {
       "id": "mach_0004",
       "name": "Main Switchboard 1",
-      "length": 4.5,
-      "width": 0.5,
+      "length": 4.512,
+      "width": 0.508,
       "height": 2.177,
       "machine_type": "Switchboard",
-      "constraint": "wall",
+      "constraint": "floor",
       "position": {
-        "x": 5.0,
-        "y": 0.0,
-        "z": 0.0
+        "x": 5.1,
+        "y": 0.334,
+        "z": 5.383
       },
-      "is_locked": false
+      "is_locked": true
     },
     {
       "id": "mach_0005",
@@ -265,11 +265,7 @@
       "pipe_type": "Closed",
       "suction_type": "Pressurised",
       "path": null,
-      "pipe_content": "Bilge",
-      "avg_installability_score": 1.0,
-      "avg_time_multiplier": 1.0,
-      "routing_status": null,
-      "class_flags": []
+      "pipe_content": "Bilge"
     },
     {
       "id": "pipe_01",
@@ -289,11 +285,7 @@
       "pipe_type": "Closed",
       "suction_type": "Pressurised",
       "path": null,
-      "pipe_content": "Bilge",
-      "avg_installability_score": 1.0,
-      "avg_time_multiplier": 1.0,
-      "routing_status": null,
-      "class_flags": []
+      "pipe_content": "Bilge"
     },
     {
       "id": "pipe_02",
@@ -313,11 +305,7 @@
       "pipe_type": "Closed",
       "suction_type": "Pressurised",
       "path": null,
-      "pipe_content": "Lube Oil",
-      "avg_installability_score": 1.0,
-      "avg_time_multiplier": 1.0,
-      "routing_status": null,
-      "class_flags": []
+      "pipe_content": "Lube Oil"
     },
     {
       "id": "pipe_03",
@@ -337,11 +325,7 @@
       "pipe_type": "Closed",
       "suction_type": "Pressurised",
       "path": null,
-      "pipe_content": "Fuel Oil",
-      "avg_installability_score": 1.0,
-      "avg_time_multiplier": 1.0,
-      "routing_status": null,
-      "class_flags": []
+      "pipe_content": "Fuel Oil"
     },
     {
       "id": "pipe_04",
@@ -361,11 +345,7 @@
       "pipe_type": "Closed",
       "suction_type": "Pressurised",
       "path": null,
-      "pipe_content": "General Fluid",
-      "avg_installability_score": 1.0,
-      "avg_time_multiplier": 1.0,
-      "routing_status": null,
-      "class_flags": []
+      "pipe_content": "General Fluid"
     },
     {
       "id": "pipe_05",
@@ -385,42 +365,50 @@
       "pipe_type": "Closed",
       "suction_type": "Pressurised",
       "path": null,
-      "pipe_content": "Fire Fighting",
-      "avg_installability_score": 1.0,
-      "avg_time_multiplier": 1.0,
-      "routing_status": null,
-      "class_flags": []
+      "pipe_content": "Fire Fighting"
+    },
+    {
+      "id": "pipe_06",
+      "name": "Fuel Oil HFO \u2014 HP Supply (132)",
+      "start": {
+        "x": 5.62,
+        "y": 11.06,
+        "z": 1.81
+      },
+      "end": {
+        "x": 7.25,
+        "y": 5.27,
+        "z": 1.82
+      },
+      "diameter": 0.1,
+      "priority": 7,
+      "pipe_type": "Closed",
+      "suction_type": "Pressurised",
+      "path": null,
+      "pipe_content": "Fuel Oil"
+    },
+    {
+      "id": "pipe_07",
+      "name": "Fuel Oil MDO \u2014 HP Supply (133)",
+      "start": {
+        "x": 1.94,
+        "y": 7.31,
+        "z": 7.04
+      },
+      "end": {
+        "x": 13.07,
+        "y": 9.54,
+        "z": 3.46
+      },
+      "diameter": 0.1,
+      "priority": 8,
+      "pipe_type": "Closed",
+      "suction_type": "Pressurised",
+      "path": null,
+      "pipe_content": "Fuel Oil"
     }
   ],
   "no_go_zones": [],
-  "walking_space_list": [
-    {
-      "id": "ws_0",
-      "name": "Main walkway",
-      "x_min": 0.0,
-      "y_min": 16.0,
-      "x_max": 14.5,
-      "y_max": 18.5,
-      "height": 2.1
-    },
-    {
-      "id": "ws_1",
-      "name": "Main walkway",
-      "x_min": 0.0,
-      "y_min": 8.5,
-      "x_max": 14.5,
-      "y_max": 11.0,
-      "height": 2.1
-    },
-    {
-      "id": "ws_2",
-      "name": "Breadth Main walkway",
-      "x_min": 12.0,
-      "y_min": 0.0,
-      "x_max": 13.0,
-      "y_max": 19.5,
-      "height": 2.1
-    }
-  ],
-  "routing_tray_list": []
+  "walking_spaces": [],
+  "routing_trays": []
 }
