@@ -251,6 +251,30 @@ class FuzzyInstallability:
 
         return label, round(time_mult, 3), round(inst_score, 3)
 
+    def get_score_vectorized(self, clearance_array: np.ndarray) -> np.ndarray:
+        """
+        Vectorized version of get_score to process an entire grid at once.
+        Returns an array of normalized installability scores (0.0 to 1.0).
+        """
+        clipped = np.clip(clearance_array, self.universe[0], self.universe[-1])
+        flat_clipped = clipped.ravel()
+        
+        total_membership = np.zeros_like(flat_clipped)
+        weighted_score = np.zeros_like(flat_clipped)
+        
+        for k in ORDERED_CATS:
+            # np.interp only handles 1D arrays for the first argument
+            m = np.interp(flat_clipped, self.universe, self.mf_arrays[k])
+            total_membership += m
+            weighted_score += m * CATEGORY_SCORES[k]
+            
+        # Avoid division by zero (should not happen with fuzzy partitions)
+        mask = total_membership > 1e-9
+        result = np.ones_like(flat_clipped)
+        result[mask] = weighted_score[mask] / total_membership[mask]
+        
+        return result.reshape(clearance_array.shape)
+
     def summary(self):
         """Print a summary of the loaded membership function parameters."""
         print("\n" + "="*55)

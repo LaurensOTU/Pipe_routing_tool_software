@@ -48,11 +48,13 @@ class PrecomputedGrid:
     def __init__(
         self,
         obstacles: set,
-        clearance_map,          # np.ndarray or None
+        obstacle_grid: np.ndarray,
+        clearance_map: np.ndarray,
         grid_resolution: float,
-        layout_hash: str,       # fingerprint of the layout that produced this grid
+        layout_hash: str,
     ):
         self.obstacles       = obstacles
+        self.obstacle_grid   = obstacle_grid
         self.clearance_map   = clearance_map
         self.grid_resolution = grid_resolution
         self.layout_hash     = layout_hash
@@ -117,18 +119,18 @@ class AStar:
         self.z_min_world = -0.5
 
         if precomputed_grid is not None:
-            # Reuse cached obstacle set and clearance map — BFS is skipped entirely.
-            # find_path() always copies self.obstacles before mutating it, so sharing
-            # the reference across routing runs is safe.
             self.obstacles     = precomputed_grid.obstacles
+            self.obstacle_grid = precomputed_grid.obstacle_grid
             self.clearance_map = precomputed_grid.clearance_map
             print("[AStar] Using precomputed grid — BFS skipped.")
         else:
-            # Build static obstacle set (machinery + no-go zones + walking spaces + trays)
+            gx_max = self._to_grid(self.room.length, "x") + 1
+            gy_max = self._to_grid(self.room.width, "y") + 1
+            gz_max = self._to_grid(self.room.height, "z") + 1
+            self.obstacle_grid = np.zeros((gx_max, gy_max, gz_max), dtype=bool)
             self.obstacles: Set[Tuple[int, int, int]] = set()
             self._mark_obstacles()
 
-            # Pre-compute clearance map if fuzzy penalty is active
             self.clearance_map: Optional[np.ndarray] = None
             if self.w_installability > 0 and self.fuzzy is not None:
                 self._build_clearance_map()
@@ -172,9 +174,19 @@ class AStar:
                            t.x_max, t.y_max, t.z_max)
 
     def _fill_box(self, xmin, ymin, zmin, xmax, ymax, zmax):
-        for x in range(self._to_grid(xmin, "x"), self._to_grid(xmax, "x") + 1):
-            for y in range(self._to_grid(ymin, "y"), self._to_grid(ymax, "y") + 1):
-                for z in range(self._to_grid(zmin, "z"), self._to_grid(zmax, "z") + 1):
+        x0, x1 = self._to_grid(xmin, "x"), self._to_grid(xmax, "x")
+        y0, y1 = self._to_grid(ymin, "y"), self._to_grid(ymax, "y")
+        z0, z1 = self._to_grid(zmin, "z"), self._to_grid(zmax, "z")
+        
+        # Clamp to grid bounds
+        x0, x1 = max(0, x0), min(self.obstacle_grid.shape[0] - 1, x1)
+        y0, y1 = max(0, y0), min(self.obstacle_grid.shape[1] - 1, y1)
+        z0, z1 = max(0, z0), min(self.obstacle_grid.shape[2] - 1, z1)
+
+        self.obstacle_grid[x0:x1+1, y0:y1+1, z0:z1+1] = True
+        for x in range(x0, x1 + 1):
+            for y in range(y0, y1 + 1):
+                for z in range(z0, z1 + 1):
                     self.obstacles.add((x, y, z))
 
     # ------------------------------------------------------------------
@@ -189,9 +201,7 @@ class AStar:
         Result stored in self.clearance_map[gx, gy, gz] as float (mm).
         Cells that ARE obstacles get clearance = 0.
         """
-        gx_max = self._to_grid(self.room.length, "x") + 1
-        gy_max = self._to_grid(self.room.width, "y") + 1
-        gz_max = self._to_grid(self.room.height, "z") + 1
+        gx_max, gy_max, gz_max = self.obstacle_grid.shape
 
         # Distance in grid cells (initialise to infinity for free cells)
         dist = np.full((gx_max, gy_max, gz_max), np.inf, dtype=float)
@@ -199,18 +209,14 @@ class AStar:
         # Seed: all obstacle cells start at distance 0
         from collections import deque
         queue = deque()
-        for (ox, oy, oz) in self.obstacles:
-            if 0 <= ox < gx_max and 0 <= oy < gy_max and 0 <= oz < gz_max:
-                if dist[ox, oy, oz] == np.inf:
-                    dist[ox, oy, oz] = 0.0
-                    queue.append((ox, oy, oz))
-
-        # Boundary walls are NOT treated as obstacles anymore, because pipes
-        # can be mounted directly on them without penalty.
-        # Only machinery and user-defined zones create clearance issues.
+        
+        # Use numpy to find all obstacle indices (much faster than iterating)
+        ox, oy, oz = np.where(self.obstacle_grid)
+        for i in range(len(ox)):
+            dist[ox[i], oy[i], oz[i]] = 0.0
+            queue.append((ox[i], oy[i], oz[i]))
 
         # BFS wavefront propagation (uses Chebyshev distance for speed)
-        # For true Euclidean we do a simple BFS with 26-connectivity
         dirs26 = [
             (dx, dy, dz)
             for dx in (-1, 0, 1)
@@ -241,97 +247,52 @@ class AStar:
     # Fuzzy installability cost
     # ------------------------------------------------------------------
 
-    def _installability_cost(self, cell: Tuple[int, int, int],
-                              pipe_radius_mm: float) -> float:
-        """
-        Return the installability penalty for moving through this cell.
-        Returns 0.0 if fuzzy scoring is disabled.
-        """
-        if self.clearance_map is None or self.fuzzy is None:
-            return 0.0
-
-        gx, gy, gz = cell
-        shape = self.clearance_map.shape
-        if not (0 <= gx < shape[0] and 0 <= gy < shape[1] and 0 <= gz < shape[2]):
-            return self.w_installability  # treat out-of-bounds as worst case
-
-        raw_clearance_mm    = self.clearance_map[gx, gy, gz]
-        effective_clearance = max(50.0, raw_clearance_mm - pipe_radius_mm)
-        _, _, inst_score    = self.fuzzy.get_score(effective_clearance)
-
-        # Penalty: (1 - score) ranges 1.0 (impossible) → 0.0 (clear)
-        return self.w_installability * (1.0 - inst_score)
+    def _get_penalty_grid(self, pipe_radius_mm: float) -> np.ndarray:
+        """Pre-calculate the fuzzy penalty for every cell in the grid."""
+        if self.clearance_map is None or self.fuzzy is None or self.w_installability == 0:
+            return np.zeros(self.obstacle_grid.shape, dtype=float)
+        
+        # Vectorized calculation
+        eff_cl = np.maximum(50.0, self.clearance_map - pipe_radius_mm)
+        inst_scores = self.fuzzy.get_score_vectorized(eff_cl)
+        return self.w_installability * (1.0 - inst_scores)
 
     # ------------------------------------------------------------------
     # Class rule enforcement — per-pipe obstacle additions
     # ------------------------------------------------------------------
 
-    def _apply_class_rules(
-        self, pipe: Pipe, already_routed: List[Pipe]
-    ) -> Set[Tuple[int, int, int]]:
-        """
-        Return extra obstacle cells that apply only to this pipe, based on
-        classification society routing rules.  These are merged into the
-        per-search copy of the obstacle set so the global set is unchanged.
-
-        Rules enforced
-        --------------
-        1. Switchboard exclusion — all liquid-carrying pipes
-           (LR Pt 5, Ch 13, 5.5 — extends beyond fuel only)
-        2. Hot surface 500 mm buffer — flammable fluid pipes only
-           (BV Pt C, Ch 1, Sec 10 [11])
-        3. Bilge / seawater full separation
-           (BV Pt C, Ch 1, Sec 10 [6])
-        """
-        extra: Set[Tuple[int, int, int]] = set()
+    def _apply_class_rules_to_grid(
+        self, pipe: Pipe, already_routed: List[Pipe], obs_grid: np.ndarray
+    ):
+        """Apply class rules directly to the obstacle grid."""
         content = getattr(pipe, "pipe_content", "General Fluid")
+        max_gx, max_gy, max_gz = [s - 1 for s in obs_grid.shape]
 
-        max_gx = self._to_grid(self.room.length, "x")
-        max_gy = self._to_grid(self.room.width,  "y")
-        max_gz = self._to_grid(self.room.height,  "z")
-
-        # ------------------------------------------------------------------
-        # Rule 1 — Switchboard: block entire column above switchboard for ALL
-        #           liquid-carrying pipes (not only fuel)
-        # ------------------------------------------------------------------
+        # Rule 1 — Switchboard
         if content in LIQUID_CONTENTS:
             for m in self.machinery_list:
                 if m.machine_type == "Switchboard" and m.position:
-                    sx0 = self._to_grid(m.position.x,            "x")
-                    sx1 = self._to_grid(m.position.x + m.length, "x")
-                    sy0 = self._to_grid(m.position.y,            "y")
-                    sy1 = self._to_grid(m.position.y + m.width,  "y")
-                    gz_top = self._to_grid(m.position.z + m.height, "z")
-                    for gx in range(sx0, sx1 + 1):
-                        for gy in range(sy0, sy1 + 1):
-                            for gz in range(gz_top, max_gz + 1):
-                                if 0 <= gx <= max_gx and 0 <= gy <= max_gy:
-                                    extra.add((gx, gy, gz))
+                    sx0 = max(0, self._to_grid(m.position.x,            "x"))
+                    sx1 = min(max_gx, self._to_grid(m.position.x + m.length, "x"))
+                    sy0 = max(0, self._to_grid(m.position.y,            "y"))
+                    sy1 = min(max_gy, self._to_grid(m.position.y + m.width,  "y"))
+                    gz_top = max(0, self._to_grid(m.position.z + m.height, "z"))
+                    obs_grid[sx0:sx1+1, sy0:sy1+1, gz_top:] = True
 
-        # ------------------------------------------------------------------
-        # Rule 2 — Hot surface: 500 mm exclusion buffer around any machinery
-        #           tagged "Hot Surface", for flammable fluid pipes only
-        # ------------------------------------------------------------------
+        # Rule 2 — Hot surface
         if content in FLAMMABLE_CONTENTS:
-            buf = int(math.ceil(0.5 / self.grid_resolution))  # 500 mm → grid cells
+            buf = int(math.ceil(0.5 / self.grid_resolution))
             for m in self.machinery_list:
                 if m.machine_type == "Hot Surface" and m.position:
-                    mx0 = self._to_grid(m.position.x,            "x") - buf
-                    mx1 = self._to_grid(m.position.x + m.length, "x") + buf
-                    my0 = self._to_grid(m.position.y,            "y") - buf
-                    my1 = self._to_grid(m.position.y + m.width,  "y") + buf
-                    mz0 = self._to_grid(m.position.z,            "z") - buf
-                    mz1 = self._to_grid(m.position.z + m.height, "z") + buf
-                    for gx in range(mx0, mx1 + 1):
-                        for gy in range(my0, my1 + 1):
-                            for gz in range(mz0, mz1 + 1):
-                                if 0 <= gx <= max_gx and 0 <= gy <= max_gy and 0 <= gz <= max_gz:
-                                    extra.add((gx, gy, gz))
+                    mx0 = max(0, self._to_grid(m.position.x,            "x") - buf)
+                    mx1 = min(max_gx, self._to_grid(m.position.x + m.length, "x") + buf)
+                    my0 = max(0, self._to_grid(m.position.y,            "y") - buf)
+                    my1 = min(max_gy, self._to_grid(m.position.y + m.width,  "y") + buf)
+                    mz0 = max(0, self._to_grid(m.position.z,            "z") - buf)
+                    mz1 = min(max_gz, self._to_grid(m.position.z + m.height, "z") + buf)
+                    obs_grid[mx0:mx1+1, my0:my1+1, mz0:mz1+1] = True
 
-        # ------------------------------------------------------------------
-        # Rule 3 — Bilge / seawater full separation: treat conflicting system
-        #           paths as hard obstacles (wider margin than normal pipes)
-        # ------------------------------------------------------------------
+        # Rule 3 — Bilge / seawater separation
         if content == "Bilge":
             conflict_types: Set[str] = {"Seawater / Ballast"}
         elif content == "Seawater / Ballast":
@@ -340,22 +301,18 @@ class AStar:
             conflict_types = set()
 
         if conflict_types:
-            sep = max(3, int(math.ceil(0.3 / self.grid_resolution)))  # 300 mm minimum gap
+            sep = max(3, int(math.ceil(0.3 / self.grid_resolution)))
             for p in already_routed:
                 p_content = getattr(p, "pipe_content", "General Fluid")
                 if p_content in conflict_types and p.path:
                     for pos in p.path:
-                        pg = (
-                            self._to_grid(pos.x, "x"),
-                            self._to_grid(pos.y, "y"),
-                            self._to_grid(pos.z, "z"),
-                        )
-                        for dx in range(-sep, sep + 1):
-                            for dy in range(-sep, sep + 1):
-                                for dz in range(-sep, sep + 1):
-                                    extra.add((pg[0]+dx, pg[1]+dy, pg[2]+dz))
-
-        return extra
+                        gx = self._to_grid(pos.x, "x")
+                        gy = self._to_grid(pos.y, "y")
+                        gz = self._to_grid(pos.z, "z")
+                        x0, x1 = max(0, gx-sep), min(max_gx, gx+sep)
+                        y0, y1 = max(0, gy-sep), min(max_gy, gy+sep)
+                        z0, z1 = max(0, gz-sep), min(max_gz, gz+sep)
+                        obs_grid[x0:x1+1, y0:y1+1, z0:z1+1] = True
 
     # ------------------------------------------------------------------
     # A* core
@@ -381,26 +338,24 @@ class AStar:
                  self._to_grid(pipe.end.y, "y"),
                  self._to_grid(pipe.end.z, "z"))
 
-        # Copy static obstacles, then add previously routed pipe paths
-        current_obs = self.obstacles.copy()
+        # Optimization 2: Use NumPy array for obstacles
+        current_obs = self.obstacle_grid.copy()
         parallel_friendly: Set[Tuple[int, int, int]] = set()
         
+        max_gx, max_gy, max_gz = [s - 1 for s in current_obs.shape]
+
         for p in already_routed:
             if p.path:
-                # Minimum separation distance between centerlines in metres
                 safety_dist_m = (pipe.diameter + p.diameter) / 2.0
-                # safety_dist_g = how many grid cells that is
                 safety_dist_g = safety_dist_m / self.grid_resolution
-                
-                # Pre-calculate a small spherical mask of relative offsets to block
-                # this is much faster than running math.sqrt inside the path loop
                 r_int = int(math.ceil(safety_dist_g))
+                
+                # Pre-calculate relative offsets for the safety buffer
                 offsets = []
                 for dx in range(-r_int, r_int + 1):
                     for dy in range(-r_int, r_int + 1):
                         for dz in range(-r_int, r_int + 1):
                             dist_sq = dx*dx + dy*dy + dz*dz
-                            # use a slightly smaller factor (0.95) to allow touching
                             if math.sqrt(dist_sq) < (safety_dist_g * 0.95):
                                 offsets.append((dx, dy, dz))
 
@@ -409,69 +364,75 @@ class AStar:
                           self._to_grid(pos.y, "y"),
                           self._to_grid(pos.z, "z"))
                     
-                    # Block the centerline and its physical volume
                     for dx, dy, dz in offsets:
-                        current_obs.add((pg[0]+dx, pg[1]+dy, pg[2]+dz))
+                        nx, ny, nz = pg[0]+dx, pg[1]+dy, pg[2]+dz
+                        if 0 <= nx <= max_gx and 0 <= ny <= max_gy and 0 <= nz <= max_gz:
+                            current_obs[nx, ny, nz] = True
 
-                    # Mark neighbors as bundling-friendly (discount if next to it)
-                    # We only mark the IMMEDIATE outer layer for bundling
+                    # Mark neighbors as bundling-friendly
                     for dx in [-1, 0, 1]:
                         for dy in [-1, 0, 1]:
                             for dz in [-1, 0, 1]:
                                 if dx == 0 and dy == 0 and dz == 0: continue
-                                nb_bundle = (pg[0]+dx, pg[1]+dy, pg[2]+dz)
-                                if nb_bundle not in current_obs:
-                                    parallel_friendly.add(nb_bundle)
+                                nx, ny, nz = pg[0]+dx, pg[1]+dy, pg[2]+dz
+                                if 0 <= nx <= max_gx and 0 <= ny <= max_gy and 0 <= nz <= max_gz:
+                                    if not current_obs[nx, ny, nz]:
+                                        parallel_friendly.add((nx, ny, nz))
 
-        # --- Class rule obstacles (pipe-content-specific, per-pass only) ---
-        current_obs |= self._apply_class_rules(pipe, already_routed)
+        self._apply_class_rules_to_grid(pipe, already_routed, current_obs)
 
-        # Check if start or end are strictly blocked (but allow if they are on the very edge)
-        # We handle this by removing start/goal from current_obs for THIS pipe's search.
-        if start in current_obs:
-            current_obs.remove(start)
-        if goal in current_obs:
-            current_obs.remove(goal)
+        # Ensure start and goal are reachable
+        current_obs[start] = False
+        current_obs[goal]  = False
 
-        # Grid bounds
-        max_gx = self._to_grid(self.room.length, "x")
-        max_gy = self._to_grid(self.room.width, "y")
-        max_gz = self._to_grid(self.room.height, "z")
+        pipe_radius_mm = (pipe.diameter / 2.0) * 1000.0
+        # Optimization 3: Pre-calculate penalty grid
+        penalty_grid = self._get_penalty_grid(pipe_radius_mm)
 
-        pipe_radius_mm = (pipe.diameter / 2.0) * 1000.0  # diameter in m → radius in mm
-
-        # 6-connected directions
         directions = [(1,0,0),(-1,0,0),(0,1,0),(0,-1,0),(0,0,1),(0,0,-1)]
 
-        # Priority queue: (f_score, tie_break, g_score, node, path, last_dir)
+        # Priority queue: (f_score, tie_break, g_score, node, last_dir)
+        # Optimization 1: Removed full path from PQ
         counter = 0
-        pq = [(0, counter, 0, start, [start], (0, 0, 0))]
-        visited: dict = {start: 0.0}
+        pq = [(0, counter, 0, start, (0, 0, 0))]
+        
+        # Optimization 2: Use NumPy for visited g-scores
+        visited_g = np.full(current_obs.shape, np.inf, dtype=float)
+        visited_g[start] = 0.0
+        
+        came_from = {}
 
         while pq:
-            f, _, g, current, path, last_dir = heapq.heappop(pq)
+            f, _, g, current, last_dir = heapq.heappop(pq)
 
             if current == goal:
+                # Optimization 1: Reconstruct path using parent pointers
+                path = []
+                curr_node = goal
+                while curr_node in came_from:
+                    path.append(curr_node)
+                    curr_node = came_from[curr_node]
+                path.append(start)
+                path.reverse()
+                
                 world_path = [Position(self._to_world(n[0], "x"),
                                       self._to_world(n[1], "y"),
                                       self._to_world(n[2], "z"))
                              for n in path]
                 return world_path, "Success"
 
-            if g > visited.get(current, math.inf):
+            if g > visited_g[current]:
                 continue
 
             for dx, dy, dz in directions:
                 nb = (current[0]+dx, current[1]+dy, current[2]+dz)
 
-                # Bounds check
                 if not (0 <= nb[0] <= max_gx and
                         0 <= nb[1] <= max_gy and
                         0 <= nb[2] <= max_gz):
                     continue
 
-                # Obstacle check
-                if nb in current_obs:
+                if current_obs[nb]:
                     continue
 
                 # --- Cost components ---
@@ -486,15 +447,14 @@ class AStar:
                 if dz != 0:
                     move_cost += self.w_vertical
 
-                # Suction penalty: favor lower z
+                # Suction penalty
                 if pipe.suction_type == "Suction":
-                    height_penalty = (nb[2]) * self.w_suction 
-                    move_cost += height_penalty
+                    move_cost += nb[2] * self.w_suction
 
-                # Fuzzy installability penalty
-                move_cost += self._installability_cost(nb, pipe_radius_mm)
+                # Optimization 3: Use pre-calculated penalty
+                move_cost += penalty_grid[nb]
 
-                # Parallel bundling discount (makes cells next to other pipes cheaper)
+                # Parallel bundling discount
                 if nb in parallel_friendly:
                     move_cost = max(0.1, move_cost - self.w_parallel)
 
@@ -507,13 +467,13 @@ class AStar:
                     move_cost = max(0.1, move_cost - self.w_wall_ceiling)
 
                 new_g = g + move_cost
-                if new_g < visited.get(nb, math.inf):
-                    visited[nb] = new_g
+                if new_g < visited_g[nb]:
+                    visited_g[nb] = new_g
+                    came_from[nb] = current
                     h = self._heuristic(nb, goal)
                     counter += 1
                     heapq.heappush(
-                        pq,
-                        (new_g + h, counter, new_g, nb, path + [nb], new_dir),
+                        pq, (new_g + h, counter, new_g, nb, new_dir)
                     )
 
         return None, "No path found (Insufficient space)"
@@ -534,7 +494,7 @@ class AStar:
             pipe.path = path
             pipe.routing_status = status
 
-            # Compute per-path installability averages when fuzzy is active
+            # Compute per-path installability averages
             if path and self.fuzzy is not None and self.clearance_map is not None:
                 pipe_radius_mm = (pipe.diameter / 2.0) * 1000.0
                 scores: List[float] = []
@@ -543,10 +503,9 @@ class AStar:
                     gx = self._to_grid(pos.x, "x")
                     gy = self._to_grid(pos.y, "y")
                     gz = self._to_grid(pos.z, "z")
-                    shape = self.clearance_map.shape
-                    if (0 <= gx < shape[0] and
-                            0 <= gy < shape[1] and
-                            0 <= gz < shape[2]):
+                    if (0 <= gx < self.clearance_map.shape[0] and
+                        0 <= gy < self.clearance_map.shape[1] and
+                        0 <= gz < self.clearance_map.shape[2]):
                         raw_cl = float(self.clearance_map[gx, gy, gz])
                         eff_cl = max(50.0, raw_cl - pipe_radius_mm)
                         _, mult, score = self.fuzzy.get_score(eff_cl)
@@ -558,9 +517,7 @@ class AStar:
                     pipe.avg_time_multiplier = round(
                         sum(multipliers) / len(multipliers), 3)
 
-            # Post-routing class rule flags
             pipe.class_flags = self.check_class_flags(pipe)
-
             routed.append(pipe)
 
         return routed
@@ -718,6 +675,7 @@ class AStar:
         )
         return PrecomputedGrid(
             obstacles=tmp.obstacles,
+            obstacle_grid=tmp.obstacle_grid,
             clearance_map=tmp.clearance_map,
             grid_resolution=grid_resolution,
             layout_hash=layout_hash,
