@@ -16,9 +16,9 @@
       "position": {
         "x": 6.932,
         "y": 2.337,
-        "z": 1.615
+        "z": 0.0
       },
-      "is_locked": true
+      "is_locked": false
     },
     {
       "id": "mach_0001",
@@ -31,9 +31,9 @@
       "position": {
         "x": 7.184,
         "y": 1.552,
-        "z": 3.015
+        "z": 0.0
       },
-      "is_locked": true
+      "is_locked": false
     },
     {
       "id": "mach_0002",
@@ -46,9 +46,9 @@
       "position": {
         "x": 2.931,
         "y": 2.102,
-        "z": 2.094
+        "z": 0.0
       },
-      "is_locked": true
+      "is_locked": false
     },
     {
       "id": "mach_0003",
@@ -61,24 +61,24 @@
       "position": {
         "x": 5.319,
         "y": 11.649,
-        "z": 1.732
+        "z": 0.0
       },
-      "is_locked": true
+      "is_locked": false
     },
     {
       "id": "mach_0004",
       "name": "Main Switchboard 1",
       "length": 4.512,
-      "width": 0.508,
+      "width": 1.0,
       "height": 2.177,
       "machine_type": "Switchboard",
-      "constraint": "floor",
+      "constraint": "wall",
       "position": {
-        "x": 5.1,
-        "y": 0.334,
-        "z": 5.383
+        "x": 4.5,
+        "y": 0.0,
+        "z": 0.0
       },
-      "is_locked": true
+      "is_locked": false
     },
     {
       "id": "mach_0005",
@@ -273,12 +273,12 @@
       "start": {
         "x": 1.5,
         "y": 5.0,
-        "z": 0.5
+        "z": 0.0
       },
       "end": {
         "x": 12.5,
         "y": 14.0,
-        "z": 0.5
+        "z": 0.0
       },
       "diameter": 0.08,
       "priority": 2,
@@ -406,6 +406,26 @@
       "suction_type": "Pressurised",
       "path": null,
       "pipe_content": "Fuel Oil"
+    },
+    {
+      "id": "pipe_08",
+      "name": "Exhaust Gas (540)",
+      "start": {
+        "x": 8.0,
+        "y": 3.5,
+        "z": 2.5
+      },
+      "end": {
+        "x": 13.5,
+        "y": 8.0,
+        "z": 10.5
+      },
+      "diameter": 0.4,
+      "priority": 9,
+      "pipe_type": "Open",
+      "suction_type": "Pressurised",
+      "path": null,
+      "pipe_content": "Exhaust Gas"
     }
   ],
   "no_go_zones": [],
