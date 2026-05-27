@@ -179,7 +179,7 @@ class FuzzyInstallability:
             left  = self.min_val      if idx == 0     else (c[idx - 1] + c[idx]) / 2.0
             right = self.max_val - 1  if idx == n - 1 else (c[idx] + c[idx + 1]) / 2.0
 
-            if self.n_responses > 3 and self.stds[key] > 0:
+            if self.n_responses >= 50 and self.stds[key] > 0:
                 sigma = max(self.stds[key], 20.0)
                 mf = self._gaussmf(self.universe, center, sigma)
                 
@@ -281,7 +281,7 @@ class FuzzyInstallability:
         print("  FuzzyInstallability — Membership Function Summary")
         print("="*55)
         print(f"  Responses loaded : {self.n_responses}")
-        mf_type = "Gaussian" if self.n_responses > 3 else "Triangular"
+        mf_type = "Gaussian" if self.n_responses >= 50 else "Triangular"
         print(f"  Function type    : {mf_type}")
         print()
         print(f"  {'Category':<12}  {'Center (mm)':>12}  {'Multiplier':>10}  {'Score':>6}")
