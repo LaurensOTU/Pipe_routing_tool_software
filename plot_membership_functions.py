@@ -51,7 +51,7 @@ def plot_membership_functions(csv_path="data/questionnaire_data.csv"):
     colors = plt.cm.viridis(np.linspace(0, 1, len(ORDERED_CATS)))
     for i, cat in enumerate(ORDERED_CATS):
         mult = fuzzy.multipliers[cat]
-        plt.axhline(y=mult, color=colors[i], linestyle='--', alpha=0.5, label=f"{cat.replace('_', ' ').title()} Level ({mult}x)")
+        plt.axhline(y=mult, color=colors[i], linestyle='--', alpha=0.5, label=f"{cat.replace('_', ' ').title()} Level ({mult:.2f}x)")
 
     plt.title("Defuzzified Time Multiplier vs. Clearance", fontsize=14)
     plt.xlabel("Clearance Distance (mm)", fontsize=12)
