@@ -6,41 +6,23 @@ Developed as part of an MSc thesis at TU Delft in collaboration with Damen Offsh
 
 ---
 
+## First-time setup (Windows)
+
+1. **Install Python** — download from [python.org](https://www.python.org/downloads/) and run the installer.
+   > ⚠️ During installation, tick **"Add Python to PATH"** — without this the tool will not start.
+
+2. **Copy the folder** — place the `Pipe_route_software` folder anywhere on your machine (e.g. the Desktop).
+
+3. **Run `setup.bat`** — double-click it once. A terminal window opens, installs the required packages, and confirms when done. You only need to do this once.
+
+4. **Run `run_tool.bat`** — double-click it every time you want to use the tool. The browser opens automatically. Keep the terminal window open while working; close it to stop the tool.
+
+---
+
 ## Requirements
 
 - Python 3.9 or higher
-- The following packages (install via `pip install -r requirements.txt`):
-
-```
-streamlit
-plotly
-numpy
-pandas
-```
-
----
-
-## Installation
-
-1. Copy the `Pipe_route_software` folder to your machine.
-2. Open a terminal and navigate into the folder:
-   ```
-   cd path/to/Pipe_route_software
-   ```
-3. Install dependencies:
-   ```
-   pip install -r requirements.txt
-   ```
-
----
-
-## Running the tool
-
-```
-streamlit run app.py
-```
-
-The tool will open in your browser automatically. If it does not, navigate to `http://localhost:8501`.
+- Packages installed automatically by `setup.bat`: streamlit, plotly, numpy, pandas
 
 ---
 
