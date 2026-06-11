@@ -75,9 +75,9 @@ _available_csvs = _scan_csvs([_local_data, _ext_folder])
 # ---------------------------------------------------------------------------
 # Sidebar — Logo and Questionnaire dataset selector
 # ---------------------------------------------------------------------------
-st.sidebar.image(os.path.join(_here, "Damen_logo.png"), use_container_width=True)
+st.sidebar.image(os.path.join(_here, "images", "Damen_logo.png"), use_container_width=True)
 st.sidebar.markdown("<h3 style='text-align: center; margin-top: -10px; margin-bottom: -10px;'>×</h3>", unsafe_allow_html=True)
-st.sidebar.image(os.path.join(_here, "TU_Delft_Logo.svg.png"), use_container_width=True)
+st.sidebar.image(os.path.join(_here, "images", "TU_Delft_Logo.svg.png"), use_container_width=True)
 
 st.sidebar.divider()
 st.sidebar.subheader("Fuzzy Calibration Data")
