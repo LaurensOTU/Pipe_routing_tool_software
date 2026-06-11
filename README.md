@@ -22,10 +22,10 @@ pandas
 
 ## Installation
 
-1. Copy the `Pipe_route_software_beta` folder to your machine.
+1. Copy the `Pipe_route_software` folder to your machine.
 2. Open a terminal and navigate into the folder:
    ```
-   cd path/to/Pipe_route_software_beta
+   cd path/to/Pipe_route_software
    ```
 3. Install dependencies:
    ```
@@ -47,7 +47,7 @@ The tool will open in your browser automatically. If it does not, navigate to `h
 ## Folder structure
 
 ```
-Pipe_route_software_beta/
+Pipe_route_software/
 ├── app.py                    ← Main application (entry point)
 ├── algorithms.py             ← A* routing algorithm and BFS clearance map
 ├── classes.py                ← Data classes (Room, Machinery, Pipe, etc.)
