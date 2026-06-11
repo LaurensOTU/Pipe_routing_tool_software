@@ -45,32 +45,23 @@ st.title("Damen OSV — Pipe Routing & Installability Tool")
 # ---------------------------------------------------------------------------
 _here       = os.path.dirname(os.path.abspath(__file__))
 _local_data = os.path.join(_here, "data")
-_ext_folder = os.path.normpath(
-    os.path.join(_here, "..", "Graduation_python_project", "Questionnaire data")
-)
 
-def _scan_csvs(folders: list) -> dict:
-    """Return {display_label: full_path} for every CSV in the given folders."""
+def _scan_csvs(folder: str) -> dict:
+    """Return {display_label: full_path} for every CSV in the data folder."""
     found = {}
-    for folder in folders:
-        if os.path.isdir(folder):
-            for fname in sorted(os.listdir(folder)):
-                if fname.lower().endswith(".csv"):
-                    full = os.path.join(folder, fname)
-                    # Quick response count
-                    try:
-                        with open(full, encoding="utf-8", errors="ignore") as fh:
-                            n = sum(1 for _ in fh) - 1
-                    except Exception:
-                        n = "?"
-                    
-                    label = f"{fname} ({n} resp)"
-                    if folder == _local_data:
-                        label = f"📁 [Local] {label}"
-                    found[label] = full
+    if os.path.isdir(folder):
+        for fname in sorted(os.listdir(folder)):
+            if fname.lower().endswith(".csv"):
+                full = os.path.join(folder, fname)
+                try:
+                    with open(full, encoding="utf-8", errors="ignore") as fh:
+                        n = sum(1 for _ in fh) - 1
+                except Exception:
+                    n = "?"
+                found[f"{fname} ({n} resp)"] = full
     return found
 
-_available_csvs = _scan_csvs([_local_data, _ext_folder])
+_available_csvs = _scan_csvs(_local_data)
 
 # ---------------------------------------------------------------------------
 # Sidebar — Logo and Questionnaire dataset selector
