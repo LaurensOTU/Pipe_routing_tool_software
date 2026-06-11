@@ -130,7 +130,7 @@ Example project files are provided in the `JSON files/` folder.
 
 ## Fuzzy calibration data
 
-The installability scores are calibrated from expert questionnaire responses stored in `data/questionnaire_data.csv`. The tool loads this file automatically on startup. The sidebar shows how many responses are loaded and which membership function type is active (Triangular for ≤3 responses, Gaussian for >3).
+The installability scores are calibrated from expert questionnaire responses stored in `data/questionnaire_data.csv`. The tool loads this file automatically on startup. The sidebar shows how many responses are loaded and which membership function type is active (Triangular for <50 responses, Gaussian for ≥50).
 
 To use a different dataset, place an additional `.csv` file in the `data/` folder and select it from the **Fuzzy Calibration Data** dropdown in the sidebar. The CSV must follow the same column structure as the existing file.
 

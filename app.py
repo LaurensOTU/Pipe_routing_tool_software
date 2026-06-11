@@ -100,9 +100,9 @@ fuzzy: FuzzyInstallability = st.session_state.fuzzy
 
 # Show calibration status in sidebar
 n = fuzzy.n_responses
-mf_type = "Gaussian" if n > 3 else "Triangular"
+mf_type = "Gaussian" if n >= 50 else "Triangular"
 st.sidebar.metric("Responses loaded", n)
-st.sidebar.caption(f"MF type: **{mf_type}**  ({'Gaussian unlocked ✓' if n > 3 else 'Need >3 for Gaussian'})")
+st.sidebar.caption(f"MF type: **{mf_type}**  ({'Gaussian unlocked ✓' if n >= 50 else 'Need ≥50 for Gaussian'})")
 
 # ---------------------------------------------------------------------------
 # Session state initialisation
