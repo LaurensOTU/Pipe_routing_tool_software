@@ -32,4 +32,13 @@ echo Keep this window open while using the tool.
 echo Close this window to stop the tool.
 echo.
 
-streamlit run app.py
+python -m streamlit run app.py
+if errorlevel 1 (
+    echo.
+    echo ============================================
+    echo  ERROR: The tool failed to start.
+    echo  Read the error message above for details.
+    echo ============================================
+    echo.
+    pause
+)
